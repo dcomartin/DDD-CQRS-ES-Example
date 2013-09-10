@@ -1,0 +1,51 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+
+@section scripts
+{
+    <script src="~/Scripts/jquery.signalR-1.1.2.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script type="text/javascript">
+        $().ready(function() {
+            var hub = $.connection.customerHub;
+            hub.client.customerDeleted = function (id) {
+                $('#customer' + id).remove();
+            };
+            $.connection.hub.start();
+        });
+    </script>
+}
+
+<h2>Customers</h2>
+
+@Html.ActionLink("Create Customer", "Create")
+<br /><br />
+
+<table>
+@foreach (var customer in ViewBag.Customers)
+{
+    <tr id="customer@(customer.Id)">
+        <td>@customer.Name</td>
+        <td>@customer.EmailAddress</td>
+        <td>@{
+                if (customer.IsBlacklisted)
+                {
+                    @Html.ActionLink("Yes", "Unblacklist", new {Id = customer.Id.ToString() })
+                }
+                else
+                {
+                    @Html.ActionLink("No", "Blacklist", new {Id = customer.Id.ToString() })
+                }
+            }
+        </td>
+        <td>@Html.ActionLink("Edit", "Edit", new {Id = customer.Id.ToString() })</td>
+        <td>@Ajax.ActionLink("Delete", "Delete", new {Id = customer.Id.ToString() }, new AjaxOptions()
+                                                                                         {
+                                                                                             HttpMethod = "GET"
+                                                                                         })
+        </td>
+    </tr>
+    
+}
+</table>

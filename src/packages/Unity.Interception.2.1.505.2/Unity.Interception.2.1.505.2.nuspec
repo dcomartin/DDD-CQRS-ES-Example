@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Unity.Interception</id>
+    <version>2.1.505.2</version>
+    <title>Unity Interception Extension</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>http://www.opensource.org/licenses/ms-pl</licenseUrl>
+    <projectUrl>http://msdn.microsoft.com/en-us/library/ff660891(PandP.20).aspx</projectUrl>
+    <iconUrl>http://nuget.org/Media/Default/Packages/Unity/2.0/entlib_new_icon_100x100.png</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Unity interception enables you to effectively capture calls to objects and add additional functionality to the target object. Interception is useful when you want to modify the behavior for individual objects but not the entire class, very much as you would do when using the Decorator pattern. It provides a flexible approach for adding new behaviors to an object at run time.</description>
+    <summary>Unity interception enables you to effectively capture calls to objects and add additional functionality to the target object.</summary>
+    <tags>Unity EntLib IoC DI container interception AOP aspect LOB</tags>
+    <dependencies>
+      <dependency id="Unity" version="2.1" />
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="mscorlib" targetFramework=".NETFramework3.5, .NETFramework4.0, Silverlight4.0" />
+    </frameworkAssemblies>
+  </metadata>
+</package>

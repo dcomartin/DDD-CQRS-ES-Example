@@ -1,0 +1,65 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messages", "Messages\Messages.csproj", "{5F3B3B46-F1F9-4265-A5A8-474361AE9AFF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusServer", "BusServer\BusServer.csproj", "{7BC0877A-997B-4FBB-A0FF-894693A0249C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinFormClient", "BusClient\WinFormClient.csproj", "{FD33849B-9128-4391-ACA6-E49F1EE842AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventServer", "EventServer\EventServer.csproj", "{7CCEFA6C-0692-4C03-9ECE-BA397632BFFF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetEventStoreRepository", "GetEventStoreRepository\GetEventStoreRepository.csproj", "{68568F4B-6637-418E-8C28-C692F811ED42}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{C3398E31-9591-4CEB-8F24-1EF8DBC0B5C9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadModel", "ReadModel\ReadModel.csproj", "{F5FE352D-7770-4E26-8FCA-5E2CB43D5430}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVCClient", "MVCClient\MVCClient.csproj", "{BAAFCEA1-83FA-4838-A1E2-DC35336A584F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5F3B3B46-F1F9-4265-A5A8-474361AE9AFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F3B3B46-F1F9-4265-A5A8-474361AE9AFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F3B3B46-F1F9-4265-A5A8-474361AE9AFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F3B3B46-F1F9-4265-A5A8-474361AE9AFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BC0877A-997B-4FBB-A0FF-894693A0249C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BC0877A-997B-4FBB-A0FF-894693A0249C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BC0877A-997B-4FBB-A0FF-894693A0249C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BC0877A-997B-4FBB-A0FF-894693A0249C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD33849B-9128-4391-ACA6-E49F1EE842AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD33849B-9128-4391-ACA6-E49F1EE842AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD33849B-9128-4391-ACA6-E49F1EE842AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD33849B-9128-4391-ACA6-E49F1EE842AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CCEFA6C-0692-4C03-9ECE-BA397632BFFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CCEFA6C-0692-4C03-9ECE-BA397632BFFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CCEFA6C-0692-4C03-9ECE-BA397632BFFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CCEFA6C-0692-4C03-9ECE-BA397632BFFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68568F4B-6637-418E-8C28-C692F811ED42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68568F4B-6637-418E-8C28-C692F811ED42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68568F4B-6637-418E-8C28-C692F811ED42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68568F4B-6637-418E-8C28-C692F811ED42}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3398E31-9591-4CEB-8F24-1EF8DBC0B5C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3398E31-9591-4CEB-8F24-1EF8DBC0B5C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3398E31-9591-4CEB-8F24-1EF8DBC0B5C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3398E31-9591-4CEB-8F24-1EF8DBC0B5C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5FE352D-7770-4E26-8FCA-5E2CB43D5430}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5FE352D-7770-4E26-8FCA-5E2CB43D5430}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5FE352D-7770-4E26-8FCA-5E2CB43D5430}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5FE352D-7770-4E26-8FCA-5E2CB43D5430}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BAAFCEA1-83FA-4838-A1E2-DC35336A584F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAAFCEA1-83FA-4838-A1E2-DC35336A584F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAAFCEA1-83FA-4838-A1E2-DC35336A584F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAAFCEA1-83FA-4838-A1E2-DC35336A584F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35;packages\Unity.Interception.2.1.505.2\lib\NET35
+	EndGlobalSection
+EndGlobal

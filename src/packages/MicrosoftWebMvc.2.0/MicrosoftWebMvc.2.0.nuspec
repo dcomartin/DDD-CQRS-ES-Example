@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>MicrosoftWebMvc</id>
+    <version>2.0</version>
+    <title>MicrosoftWebMvc</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>http://aspnet.codeplex.com/license</licenseUrl>
+    <projectUrl>http://aspnet.codeplex.com/</projectUrl>
+    <iconUrl>https://nugetgallery.blob.core.windows.net/icons/MicrosoftWebMvc.2.0.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>ASP.NET MVC 2 Futures includes unsupported prototype features for ASP.NET MVC 2, from the MVC team.</description>
+    <summary>ASP.NET MVC 2 Futures includes unsupported prototype features for ASP.NET MVC 2, from the MVC team.</summary>
+    <releaseNotes />
+    <copyright />
+    <language />
+    <dependencies>
+      <dependency id="Mvc2Futures" version="2.0.50217.0" />
+    </dependencies>
+  </metadata>
+</package>
