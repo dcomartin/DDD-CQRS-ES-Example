@@ -23,7 +23,7 @@ namespace GetEventStoreRepository
 
         private readonly Func<Type, Guid, string> _aggregateIdToStreamName;
 
-        private readonly EventStoreConnection _eventStoreConnection;
+        private readonly IEventStoreConnection _eventStoreConnection;
         private static readonly JsonSerializerSettings SerializerSettings;
 
         static GetEventStoreRepository()
@@ -31,12 +31,12 @@ namespace GetEventStoreRepository
             SerializerSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.None };
         }
 
-        public GetEventStoreRepository(EventStoreConnection eventStoreConnection, IBus bus)
+        public GetEventStoreRepository(IEventStoreConnection eventStoreConnection, IBus bus)
             : this(eventStoreConnection, (t, g) => string.Format("{0}-{1}", char.ToLower(t.Name[0]) + t.Name.Substring(1), g.ToString("N")), bus)
         {
         }
 
-        private GetEventStoreRepository(EventStoreConnection eventStoreConnection, Func<Type, Guid, string> aggregateIdToStreamName, IBus bus)
+        private GetEventStoreRepository(IEventStoreConnection eventStoreConnection, Func<Type, Guid, string> aggregateIdToStreamName, IBus bus)
         {
             _bus = bus;
             _eventStoreConnection = eventStoreConnection;

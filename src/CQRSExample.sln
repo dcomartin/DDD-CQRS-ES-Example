@@ -5,8 +5,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messages", "Messages\Messag
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusServer", "BusServer\BusServer.csproj", "{7BC0877A-997B-4FBB-A0FF-894693A0249C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinFormClient", "BusClient\WinFormClient.csproj", "{FD33849B-9128-4391-ACA6-E49F1EE842AF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventServer", "EventServer\EventServer.csproj", "{7CCEFA6C-0692-4C03-9ECE-BA397632BFFF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetEventStoreRepository", "GetEventStoreRepository\GetEventStoreRepository.csproj", "{68568F4B-6637-418E-8C28-C692F811ED42}"
@@ -31,10 +29,6 @@ Global
 		{7BC0877A-997B-4FBB-A0FF-894693A0249C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BC0877A-997B-4FBB-A0FF-894693A0249C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7BC0877A-997B-4FBB-A0FF-894693A0249C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FD33849B-9128-4391-ACA6-E49F1EE842AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FD33849B-9128-4391-ACA6-E49F1EE842AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FD33849B-9128-4391-ACA6-E49F1EE842AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FD33849B-9128-4391-ACA6-E49F1EE842AF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7CCEFA6C-0692-4C03-9ECE-BA397632BFFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7CCEFA6C-0692-4C03-9ECE-BA397632BFFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7CCEFA6C-0692-4C03-9ECE-BA397632BFFF}.Release|Any CPU.ActiveCfg = Release|Any CPU

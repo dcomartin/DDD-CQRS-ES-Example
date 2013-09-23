@@ -36,7 +36,7 @@ namespace MVCClient
                            .IsTransactional(false)
                            .PurgeOnStartup(false)
                            .UnicastBus()
-                           .ImpersonateSender(false)
+                           //.ImpersonateSender(false)
                            .CreateBus()
                            .Start();
         }

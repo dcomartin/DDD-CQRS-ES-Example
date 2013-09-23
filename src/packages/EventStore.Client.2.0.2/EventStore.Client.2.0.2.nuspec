@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>EventStore.Client</id>
+    <version>2.0.2</version>
+    <authors>Event Store LLP</authors>
+    <owners>Event Store LLP</owners>
+    <licenseUrl>http://geteventstore.com/terms/licence/bsd/</licenseUrl>
+    <projectUrl>http://geteventstore.com/</projectUrl>
+    <iconUrl>http://geteventstore.com/assets/ouro-200.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>The client API for the Event Store. Get the open source or commercial versions of the Event Store server from http://geteventstore.com</description>
+    <releaseNotes>Client API for version 2 of the Event Store</releaseNotes>
+    <copyright>Copyright 2012-2013 Event Store LLP</copyright>
+  </metadata>
+</package>

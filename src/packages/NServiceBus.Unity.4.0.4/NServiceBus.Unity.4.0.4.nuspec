@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>NServiceBus.Unity</id>
+    <version>4.0.4</version>
+    <title>NServiceBus Unity</title>
+    <authors>NServiceBus Ltd</authors>
+    <owners>NServiceBus Ltd</owners>
+    <licenseUrl>http://particular.net/LicenseAgreement</licenseUrl>
+    <projectUrl>http://particular.net/</projectUrl>
+    <iconUrl>http://s3.amazonaws.com/nuget.images/NServiceBus_32.png</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>The Unity Container for the nservicebus</description>
+    <releaseNotes />
+    <copyright>Copyright 2010-2013 NServiceBus. All rights reserved</copyright>
+    <tags>nservicebus servicebus msmq cqrs publish subscribe</tags>
+    <dependencies>
+      <dependency id="Unity.Interception" version="[2.1.505.0, 3.0)" />
+      <dependency id="Unity" version="[2.1.505.0, 3.0)" />
+      <dependency id="NServiceBus" version="[4.0.4]" />
+    </dependencies>
+  </metadata>
+</package>

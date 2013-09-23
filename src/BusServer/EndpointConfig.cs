@@ -22,8 +22,8 @@ namespace BusServer
             var section = (UnityConfigurationSection)ConfigurationManager.GetSection("Unity");
             section.Configure(container);
 
-            var connection = EventStoreConnection.Create();
-            connection.Connect(new IPEndPoint(IPAddress.Loopback, 1113));          
+            var connection = EventStoreConnection.Create(new IPEndPoint(IPAddress.Loopback, 1113));
+            connection.Connect();          
             container.RegisterInstance(connection);
 
             Configure.With().UnityBuilder(container);
