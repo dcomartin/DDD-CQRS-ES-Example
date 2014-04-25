@@ -4,48 +4,112 @@
 
 @section scripts
 {
-    <script src="~/Scripts/jquery.signalR-1.1.2.js"></script>
+    <script src="~/Scripts/jquery.signalR-1.1.3.js"></script>
     <script src="~/signalr/hubs"></script>
     <script type="text/javascript">
+        function S4() {
+            return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+        }      
+
         $().ready(function() {
             var hub = $.connection.customerHub;
             hub.client.customerDeleted = function (id) {
-                $('#customer' + id).remove();
+                $('#activeCustomer' + id).remove();
+                $('#blacklistedCustomer' + id).remove();
+            };
+            hub.client.customerCreated = function (id, name, email) {
+                $('#customerTable tbody').append('<tr id="activeCustomer' + id + '"><td id="activeName' + id + '">' + name + '</td><td id="activeEmail' + id + '">' + email + '</td><td><a data-ajax="true" data-ajax-method="GET" href="/Default/Blacklist/' + id + '" class="btn btn-warning"><i class="glyphicon glyphicon-remove"></i> Blacklist</a></td><td><a data-ajax="true" data-ajax-method="GET" href="/Default/Delete/' + id + '" class="btn btn-danger"><i class="glyphicon glyphicon-trash"></i> Delete</a></td></tr>');
+            };
+            hub.client.customerBlacklisted = function (id) {
+                var name = $('#activeName' + id).text();
+                var email = $('#activeEmail' + id).text();
+
+                $('#activeCustomer' + id).remove();
+                $('#blacklistedTable tbody').append('<tr id="blacklistedCustomer' + id + '"><td id="blacklistedName' + id + '">' + name + '</td><td id="blacklistedEmail' + id + '">' + email + '</td><td><a data-ajax="true" data-ajax-method="GET" href="/Default/Unblacklist/' + id + '" class="btn btn-success"><i class="glyphicon glyphicon-ok"></i> Unblacklist</a></td><td><a data-ajax="true" data-ajax-method="GET" href="/Default/Delete/' + id + '" class="btn btn-danger"><i class="glyphicon glyphicon-trash"></i> Delete</a></td></tr>');
+            };
+            hub.client.customerUnblacklisted = function (id) {
+                var name = $('#blacklistedName' + id).text();
+                var email = $('#blacklistedEmail' + id).text();
+
+                $('#blacklistedCustomer' + id).remove();
+                $('#customerTable tbody').append('<tr id="activeCustomer' + id + '"><td id="activeName' + id + '">' + name + '</td><td id="activeEmail' + id + '">' + email + '</td><td><a data-ajax="true" data-ajax-method="GET" href="/Default/Blacklist/' + id + '" class="btn btn-warning"><i class="glyphicon glyphicon-remove"></i> Blacklist</a></td><td><a data-ajax="true" data-ajax-method="GET" href="/Default/Delete/' + id + '" class="btn btn-danger"><i class="glyphicon glyphicon-trash"></i> Delete</a></td></tr>');
             };
             $.connection.hub.start();
+
+            $('#btnAdd').click(function () {
+                var id = (S4() + S4() + "-" + S4() + "-4" + S4().substr(0, 3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
+                $.post("/Default/Create", { Id: id, Name: $('#txtName').val(), Email: $('#txtEmail').val() });
+            });
         });
+
+
     </script>
 }
 
-<h2>Customers</h2>
+<div class="container">
 
-@Html.ActionLink("Create Customer", "Create")
+<h2>Add Customers</h2>
+
+<div class="form-group">
+    <label class="control-label col-sm-3">Name:</label>
+    <input type="text" id="txtName" class="form-control input-lg" />
+</div>
+
+<div class="form-group">
+    <label class="control-label col-sm-3">Email:</label>
+    <input type="text" id="txtEmail" class="form-control input-lg" />
+</div>
+<div class="form-group">
+    <button id="btnAdd" class="btn btn-primary">
+        <i class="glyphicon glyphicon-ok"></i> Submit
+    </button>
+</div>
 <br /><br />
 
-<table>
-@foreach (var customer in ViewBag.Customers)
+<h2>Active Customers</h2>
+<table id="customerTable" class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <td class="col-md-5">Name</td>
+            <td class="col-md-5">Email</td>
+            <td class="col-md-1"></td>
+            <td class="col-md-1"></td>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var customer in ViewBag.ActiveCustomers)
 {
-    <tr id="customer@(customer.Id)">
-        <td>@customer.Name</td>
-        <td>@customer.EmailAddress</td>
-        <td>@{
-                if (customer.IsBlacklisted)
-                {
-                    @Html.ActionLink("Yes", "Unblacklist", new {Id = customer.Id.ToString() })
-                }
-                else
-                {
-                    @Html.ActionLink("No", "Blacklist", new {Id = customer.Id.ToString() })
-                }
-            }
-        </td>
-        <td>@Html.ActionLink("Edit", "Edit", new {Id = customer.Id.ToString() })</td>
-        <td>@Ajax.ActionLink("Delete", "Delete", new {Id = customer.Id.ToString() }, new AjaxOptions()
-                                                                                         {
-                                                                                             HttpMethod = "GET"
-                                                                                         })
-        </td>
+    <tr id="activeCustomer@(customer.Id)">
+        <td id="activeName@(customer.Id)">@customer.Name</td>
+        <td id="activeEmail@(customer.Id)">@customer.EmailAddress</td>
+        <td><a data-ajax="true" data-ajax-method="GET" href="/Default/Blacklist/@(customer.Id)" class="btn btn-warning"><i class="glyphicon glyphicon-remove"></i> Blacklist</a></td>
+        <td><a data-ajax="true" data-ajax-method="GET" href="/Default/Delete/@(customer.Id)" class="btn btn-danger"><i class="glyphicon glyphicon-trash"></i> Delete</a></td>
     </tr>
-    
 }
+    </tbody>
 </table>
+
+<h2>Blacklisted Customers</h2>
+<table id="blacklistedTable" class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <td class="col-md-5">Name</td>
+            <td class="col-md-5">Email</td>
+            <td class="col-md-1"></td>
+            <td class="col-md-1"></td>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var customer in ViewBag.BlacklistedCustomers)
+{
+    <tr id="backlistedCustomer@(customer.Id)">
+        <td id="blacklistedName@(customer.Id)">@customer.Name</td>
+        <td id="blacklistedEmail@(customer.Id)">@customer.EmailAddress</td>
+        <td><a data-ajax="true" data-ajax-method="GET" href="/Default/Unblacklist/@(customer.Id)" class="btn btn-success"><i class="glyphicon glyphicon-ok"></i> Unblacklist</a></td>
+        <td><a data-ajax="true" data-ajax-method="GET" href="/Default/Delete/@(customer.Id)" class="btn btn-danger"><i class="glyphicon glyphicon-trash"></i> Delete</a></td>
+    </tr>
+}
+    </tbody>
+</table>
+
+</div>

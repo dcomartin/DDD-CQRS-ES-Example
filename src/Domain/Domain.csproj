@@ -31,10 +31,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CommonDomain">
-      <HintPath>..\GetEventStoreRepository\lib\CommonDomain.dll</HintPath>
+      <HintPath>..\packages\CommonDomain.1.6.0.3\lib\net40\CommonDomain.dll</HintPath>
     </Reference>
-    <Reference Include="CommonDomain.Core">
-      <HintPath>..\GetEventStoreRepository\lib\CommonDomain.Core.dll</HintPath>
+    <Reference Include="NEventStore">
+      <HintPath>..\packages\NEventStore.4.0.0.15\lib\net40\NEventStore.dll</HintPath>
     </Reference>
     <Reference Include="NServiceBus">
       <HintPath>..\packages\NServiceBus.Interfaces.3.3.8\lib\net40\NServiceBus.dll</HintPath>
@@ -51,6 +51,9 @@
       <Project>{5F3B3B46-F1F9-4265-A5A8-474361AE9AFF}</Project>
       <Name>Messages</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

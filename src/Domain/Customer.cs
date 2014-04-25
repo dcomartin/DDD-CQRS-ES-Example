@@ -17,6 +17,7 @@ namespace Domain
 
         public Customer(Guid id, string name, string emailAddress)
         {
+            Version = -100;
             RaiseEvent(new CustomerCreated(id, name, emailAddress));
         }
 

@@ -1,0 +1,2187 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>NEventStore</name>
+    </assembly>
+    <members>
+        <member name="T:NEventStore.ConcurrencyException">
+            <summary>
+                Represents an optimistic concurrency conflict between multiple writers.
+            </summary>
+        </member>
+        <member name="M:NEventStore.ConcurrencyException.#ctor">
+            <summary>
+                Initializes a new instance of the ConcurrencyException class.
+            </summary>
+        </member>
+        <member name="M:NEventStore.ConcurrencyException.#ctor(System.String)">
+            <summary>
+                Initializes a new instance of the ConcurrencyException class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:NEventStore.ConcurrencyException.#ctor(System.String,System.Exception)">
+            <summary>
+                Initializes a new instance of the ConcurrencyException class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+            <param name="innerException">The message that is the cause of the current exception.</param>
+        </member>
+        <member name="M:NEventStore.ConcurrencyException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+                Initializes a new instance of the ConcurrencyException class.
+            </summary>
+            <param name="info">The SerializationInfo that holds the serialized object data of the exception being thrown.</param>
+            <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
+        </member>
+        <member name="T:NEventStore.IPipelineHook">
+            <summary>
+                Provides the ability to hook into the pipeline of persisting a commit.
+            </summary>
+            <remarks>
+                Instances of this class must be designed to be multi-thread safe such that they can be shared between threads.
+            </remarks>
+        </member>
+        <member name="M:NEventStore.IPipelineHook.Select(NEventStore.Commit)">
+            <summary>
+                Hooks into the selection pipeline just prior to the commit being returned to the caller.
+            </summary>
+            <param name="committed">The commit to be filtered.</param>
+            <returns>If successful, returns a populated commit; otherwise returns null.</returns>
+        </member>
+        <member name="M:NEventStore.IPipelineHook.PreCommit(NEventStore.Commit)">
+            <summary>
+                Hooks into the commit pipeline prior to persisting the commit to durable storage.
+            </summary>
+            <param name="attempt">The attempt to be committed.</param>
+            <returns>If processing should continue, returns true; otherwise returns false.</returns>
+        </member>
+        <member name="M:NEventStore.IPipelineHook.PostCommit(NEventStore.Commit)">
+            <summary>
+                Hooks into the commit pipeline just after the commit has been *successfully* committed to durable storage.
+            </summary>
+            <param name="committed">The commit which has been persisted.</param>
+        </member>
+        <member name="T:NEventStore.Persistence.IPersistStreams">
+            <summary>
+                Indicates the ability to adapt the underlying persistence infrastructure to behave like a stream of events.
+            </summary>
+            <remarks>
+                Instances of this class must be designed to be multi-thread safe such that they can be shared between threads.
+            </remarks>
+        </member>
+        <member name="T:NEventStore.ICommitEvents">
+            <summary>
+                Indicates the ability to commit events and access events to and from a given stream.
+            </summary>
+            <remarks>
+                Instances of this class must be designed to be multi-thread safe such that they can be shared between threads.
+            </remarks>
+        </member>
+        <member name="M:NEventStore.ICommitEvents.GetFrom(System.Guid,System.Int32,System.Int32)">
+            <summary>
+                Gets the corresponding commits from the stream indicated starting at the revision specified until the
+                end of the stream sorted in ascending order--from oldest to newest.
+            </summary>
+            <param name="streamId">The stream from which the events will be read.</param>
+            <param name="minRevision">The minimum revision of the stream to be read.</param>
+            <param name="maxRevision">The maximum revision of the stream to be read.</param>
+            <returns>A series of committed events from the stream specified sorted in ascending order..</returns>
+            <exception cref="T:NEventStore.Persistence.StorageException"/>
+            <exception cref="T:NEventStore.Persistence.StorageUnavailableException"/>
+        </member>
+        <member name="M:NEventStore.ICommitEvents.Commit(NEventStore.Commit)">
+            <summary>
+                Writes the to-be-commited events provided to the underlying persistence mechanism.
+            </summary>
+            <param name="attempt">The series of events and associated metadata to be commited.</param>
+            <exception cref="T:NEventStore.ConcurrencyException"/>
+            <exception cref="T:NEventStore.Persistence.StorageException"/>
+            <exception cref="T:NEventStore.Persistence.StorageUnavailableException"/>
+        </member>
+        <member name="T:NEventStore.IAccessSnapshots">
+            <summary>
+                Indicates the ability to get or retrieve a snapshot for a given stream.
+            </summary>
+            <remarks>
+                Instances of this class must be designed to be multi-thread safe such that they can be shared between threads.
+            </remarks>
+        </member>
+        <member name="M:NEventStore.IAccessSnapshots.GetSnapshot(System.Guid,System.Int32)">
+            <summary>
+                Gets the most recent snapshot which was taken on or before the revision indicated.
+            </summary>
+            <param name="streamId">The stream to be searched for a snapshot.</param>
+            <param name="maxRevision">The maximum revision possible for the desired snapshot.</param>
+            <returns>If found, it returns the snapshot; otherwise null is returned.</returns>
+            <exception cref="T:NEventStore.Persistence.StorageException"/>
+            <exception cref="T:NEventStore.Persistence.StorageUnavailableException"/>
+        </member>
+        <member name="M:NEventStore.IAccessSnapshots.AddSnapshot(NEventStore.Snapshot)">
+            <summary>
+                Adds the snapshot provided to the stream indicated.
+            </summary>
+            <param name="snapshot">The snapshot to save.</param>
+            <returns>If the snapshot was added, returns true; otherwise false.</returns>
+            <exception cref="T:NEventStore.Persistence.StorageException"/>
+            <exception cref="T:NEventStore.Persistence.StorageUnavailableException"/>
+        </member>
+        <member name="M:NEventStore.IAccessSnapshots.GetStreamsToSnapshot(System.Int32)">
+            <summary>
+                Gets identifiers for all streams whose head and last snapshot revisions differ by at least the threshold specified.
+            </summary>
+            <param name="maxThreshold">The maximum difference between the head and most recent snapshot revisions.</param>
+            <returns>The streams for which the head and snapshot revisions differ by at least the threshold specified.</returns>
+            <exception cref="T:NEventStore.Persistence.StorageException"/>
+            <exception cref="T:NEventStore.Persistence.StorageUnavailableException"/>
+        </member>
+        <member name="M:NEventStore.Persistence.IPersistStreams.Initialize">
+            <summary>
+                Initializes and prepares the storage for use, if not already performed.
+            </summary>
+            <exception cref="T:NEventStore.Persistence.StorageException"/>
+            <exception cref="T:NEventStore.Persistence.StorageUnavailableException"/>
+        </member>
+        <member name="M:NEventStore.Persistence.IPersistStreams.GetFrom(System.DateTime)">
+            <summary>
+                Gets all commits on or after from the specified starting time.
+            </summary>
+            <param name="start">The point in time at which to start.</param>
+            <returns>All commits that have occurred on or after the specified starting time.</returns>
+            <exception cref="T:NEventStore.Persistence.StorageException"/>
+            <exception cref="T:NEventStore.Persistence.StorageUnavailableException"/>
+        </member>
+        <member name="M:NEventStore.Persistence.IPersistStreams.GetFromTo(System.DateTime,System.DateTime)">
+            <summary>
+                Gets all commits on or after from the specified starting time and before the specified end time.
+            </summary>
+            <param name="start">The point in time at which to start.</param>
+            <param name="end">The point in time at which to end.</param>
+            <returns>All commits that have occurred on or after the specified starting time and before the end time.</returns>
+            <exception cref="T:NEventStore.Persistence.StorageException"/>
+            <exception cref="T:NEventStore.Persistence.StorageUnavailableException"/>
+        </member>
+        <member name="M:NEventStore.Persistence.IPersistStreams.GetUndispatchedCommits">
+            <summary>
+                Gets a set of commits that has not yet been dispatched.
+            </summary>
+            <returns>The set of commits to be dispatched.</returns>
+            <exception cref="T:NEventStore.Persistence.StorageException"/>
+            <exception cref="T:NEventStore.Persistence.StorageUnavailableException"/>
+        </member>
+        <member name="M:NEventStore.Persistence.IPersistStreams.MarkCommitAsDispatched(NEventStore.Commit)">
+            <summary>
+                Marks the commit specified as dispatched.
+            </summary>
+            <param name="commit">The commit to be marked as dispatched.</param>
+            <exception cref="T:NEventStore.Persistence.StorageException"/>
+            <exception cref="T:NEventStore.Persistence.StorageUnavailableException"/>
+        </member>
+        <member name="M:NEventStore.Persistence.IPersistStreams.Purge">
+            <summary>
+                Completely DESTROYS the contents of ANY and ALL streams that have been successfully persisted.  Use with caution.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.IPersistStreams.IsDisposed">
+            <summary>
+                Gets a value indicating whether this instance has been disposed of.
+            </summary>
+        </member>
+        <member name="T:NEventStore.Dispatcher.IScheduleDispatches">
+            <summary>
+                Indicates the ability to schedule the specified commit for delivery--either now or in the future.
+            </summary>
+            <remarks>
+                Instances of this class must be designed to be multi-thread safe such that they can be shared between threads.
+            </remarks>
+        </member>
+        <member name="M:NEventStore.Dispatcher.IScheduleDispatches.ScheduleDispatch(NEventStore.Commit)">
+            <summary>
+                Schedules the series of messages contained within the commit provided for delivery to all interested parties.
+            </summary>
+            <param name="commit">The commit representing the series of messages to be dispatched.</param>
+        </member>
+        <member name="T:NEventStore.Dispatcher.IDispatchCommits">
+            <summary>
+                Indicates the ability to dispatch the specified commit to some kind of communications infrastructure.
+            </summary>
+            <remarks>
+                Instances of this class must be designed to be multi-thread safe such that they can be shared between threads.
+            </remarks>
+        </member>
+        <member name="M:NEventStore.Dispatcher.IDispatchCommits.Dispatch(NEventStore.Commit)">
+            <summary>
+                Dispatches the commit specified to the messaging infrastructure.
+            </summary>
+            <param name="commit">The commmit to be dispatched.</param>
+        </member>
+        <member name="T:NEventStore.ExtensionMethods">
+            <summary>
+                A set of common methods used through the EventStore.
+            </summary>
+        </member>
+        <member name="M:NEventStore.ExtensionMethods.FormatWith(System.String,System.Object[])">
+            <summary>
+                Formats the string provided using the values specified.
+            </summary>
+            <param name="format">The string to be formated.</param>
+            <param name="values">The values to be embedded into the string.</param>
+            <returns>The formatted string.</returns>
+        </member>
+        <member name="T:NEventStore.Conversion.IUpconvertEvents`2">
+            <summary>
+                Provides the ability to upconvert an event from one type to another.
+            </summary>
+            <typeparam name="TSource">The source event type from which to convert.</typeparam>
+            <typeparam name="TTarget">The target event type.</typeparam>
+        </member>
+        <member name="M:NEventStore.Conversion.IUpconvertEvents`2.Convert(`0)">
+            <summary>
+                Converts an event from one type to another.
+            </summary>
+            <param name="sourceEvent">The event to be converted.</param>
+            <returns>The converted event.</returns>
+        </member>
+        <member name="T:NEventStore.Logging.ILog">
+            <summary>
+                Indicates the ability to log diagnostic information.
+            </summary>
+            <remarks>
+                Object instances which implement this interface must be designed to be multi-thread safe.
+            </remarks>
+        </member>
+        <member name="M:NEventStore.Logging.ILog.Verbose(System.String,System.Object[])">
+            <summary>
+                Logs the most detailed level of diagnostic information.
+            </summary>
+            <param name="message">The diagnostic message to be logged.</param>
+            <param name="values">All parameter to be formatted into the message, if any.</param>
+        </member>
+        <member name="M:NEventStore.Logging.ILog.Debug(System.String,System.Object[])">
+            <summary>
+                Logs the debug-level diagnostic information.
+            </summary>
+            <param name="message">The diagnostic message to be logged.</param>
+            <param name="values">All parameter to be formatted into the message, if any.</param>
+        </member>
+        <member name="M:NEventStore.Logging.ILog.Info(System.String,System.Object[])">
+            <summary>
+                Logs important runtime diagnostic information.
+            </summary>
+            <param name="message">The diagnostic message to be logged.</param>
+            <param name="values">All parameter to be formatted into the message, if any.</param>
+        </member>
+        <member name="M:NEventStore.Logging.ILog.Warn(System.String,System.Object[])">
+            <summary>
+                Logs diagnostic issues to which attention should be paid.
+            </summary>
+            <param name="message">The diagnostic message to be logged.</param>
+            <param name="values">All parameter to be formatted into the message, if any.</param>
+        </member>
+        <member name="M:NEventStore.Logging.ILog.Error(System.String,System.Object[])">
+            <summary>
+                Logs application and infrastructure-level errors.
+            </summary>
+            <param name="message">The diagnostic message to be logged.</param>
+            <param name="values">All parameter to be formatted into the message, if any.</param>
+        </member>
+        <member name="M:NEventStore.Logging.ILog.Fatal(System.String,System.Object[])">
+            <summary>
+                Logs fatal errors which result in process termination.
+            </summary>
+            <param name="message">The diagnostic message to be logged.</param>
+            <param name="values">All parameter to be formatted into the message, if any.</param>
+        </member>
+        <member name="T:NEventStore.Logging.LogFactory">
+            <summary>
+                Provides the ability to get a new instance of the configured logger.
+            </summary>
+        </member>
+        <member name="M:NEventStore.Logging.LogFactory.#cctor">
+            <summary>
+                Initializes static members of the LogFactory class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Logging.LogFactory.BuildLogger">
+            <summary>
+                Gets or sets the log builder of the configured logger.  This should be invoked to return a new logging instance.
+            </summary>
+        </member>
+        <member name="T:NEventStore.Conversion.MultipleConvertersFoundException">
+            <summary>
+                Represents the failure that occurs when there are two or more event converters created for the same source type.
+            </summary>
+        </member>
+        <member name="M:NEventStore.Conversion.MultipleConvertersFoundException.#ctor">
+            <summary>
+                Initializes a new instance of the MultipleConvertersFoundException class.
+            </summary>
+        </member>
+        <member name="M:NEventStore.Conversion.MultipleConvertersFoundException.#ctor(System.String)">
+            <summary>
+                Initializes a new instance of the MultipleConvertersFoundException class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:NEventStore.Conversion.MultipleConvertersFoundException.#ctor(System.String,System.Exception)">
+            <summary>
+                Initializes a new instance of the MultipleConvertersFoundException class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+            <param name="innerException">The exception that is the cause of the current exception.</param>
+        </member>
+        <member name="M:NEventStore.Conversion.MultipleConvertersFoundException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+                Initializes a new instance of the MultipleConvertersFoundException class.
+            </summary>
+            <param name="info">The serialization info.</param>
+            <param name="context">The streaming context.</param>
+        </member>
+        <member name="T:NEventStore.Messages">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.AddingWireupCallback">
+            <summary>
+              Looks up a localized string similar to Adding wireup registration callback..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.AddingWireupRegistration">
+            <summary>
+              Looks up a localized string similar to Adding wireup registration for an object instance of type &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.AsyncDispatchSchedulerRegistered">
+            <summary>
+              Looks up a localized string similar to Configuring the store to dispatch messages asynchronously..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.AttemptingToResolveInstance">
+            <summary>
+              Looks up a localized string similar to Attempting to resolve existing instance..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.AutoDetectDialect">
+            <summary>
+              Looks up a localized string similar to Configuring SQL engine to auto-detect dialect..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.BuildingAndStoringNewInstance">
+            <summary>
+              Looks up a localized string similar to Building (and storing) new instance for later calls..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.BuildingEngine">
+            <summary>
+              Looks up a localized string similar to Building the persistence engine..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.BuildingNewInstance">
+            <summary>
+              Looks up a localized string similar to Building new instance..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.ConfiguringCompression">
+            <summary>
+              Looks up a localized string similar to Configuring serializer to compress the serialized payload..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.ConfiguringEncryption">
+            <summary>
+              Looks up a localized string similar to Configuring serializer to encrypt the serialized payload..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.ConfiguringEngineEnlistment">
+            <summary>
+              Looks up a localized string similar to Configuring persistence engine to enlist in ambient transactions using TransactionScope..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.ConfiguringEngineInitialization">
+            <summary>
+              Looks up a localized string similar to Configuring persistence engine to initialize..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.ConfiguringEnginePerformanceTracking">
+            <summary>
+              Looks up a localized string similar to Configuring persistence engine to track performance.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.ConfiguringInstancePerCall">
+            <summary>
+              Looks up a localized string similar to Registration configured to resolve a new instance per call..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.ConnectionFactorySpecified">
+            <summary>
+              Looks up a localized string similar to Using SQL connection factory of type &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.DialectSpecified">
+            <summary>
+              Looks up a localized string similar to Registering SQL dialect of type &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.DispatcherRegistered">
+            <summary>
+              Looks up a localized string similar to Registering dispatcher of type &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.EventUpconverterRegistered">
+            <summary>
+              Looks up a localized string similar to Configuring the store to upconvert events when fetched..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.EventUpconvertersLoadedFrom">
+            <summary>
+              Looks up a localized string similar to Will scan for event upconverters from the following assemblies: &apos;{0}&apos;.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.InitializingEngine">
+            <summary>
+              Looks up a localized string similar to Initializing the configured persistence engine..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.InstanceCannotBeNull">
+            <summary>
+              Looks up a localized string similar to The instance provided cannot be null..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.PagingSpecified">
+            <summary>
+              Looks up a localized string similar to Persistence engine configured to page every &apos;{0}&apos; records..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.RegisteringPersistenceEngine">
+            <summary>
+              Looks up a localized string similar to Registering persistence engine of type &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.RegisteringServiceInstance">
+            <summary>
+              Looks up a localized string similar to Registering wireup instance for service of type &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.RegisteringWireupCallback">
+            <summary>
+              Looks up a localized string similar to Registering wireup resolver for service of type &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.ResolvingInstance">
+            <summary>
+              Looks up a localized string similar to Resolving instance..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.ResolvingService">
+            <summary>
+              Looks up a localized string similar to Attempting to resolve instance for service of type &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.SyncDispatchSchedulerRegistered">
+            <summary>
+              Looks up a localized string similar to Configuring the store to dispatch messages synchronously..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.SynchronousDispatcherTwoPhaseCommits">
+            <summary>
+              Looks up a localized string similar to Only the synchronous dispatcher can enlist in two-phase commits..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.TypeMustBeInterface">
+            <summary>
+              Looks up a localized string similar to The type provided must be registered as an interface rather than as a concrete type, e.g. &quot;container.Register&lt;IDispatchCommits&gt;(instance);&quot;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.UnableToResolve">
+            <summary>
+              Looks up a localized string similar to Unable to resolve requested instance of type &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.WrappingSerializerEncryption">
+            <summary>
+              Looks up a localized string similar to Wrapping serializer of type &apos;{0}&apos; in RijndaelSerializer..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Messages.WrappingSerializerGZip">
+            <summary>
+              Looks up a localized string similar to Wrapping serializer of type &apos;{0}&apos; in GZipSerializer..
+            </summary>
+        </member>
+        <member name="T:NEventStore.IStoreEvents">
+            <summary>
+                Indicates the ability to store and retreive a stream of events.
+            </summary>
+            <remarks>
+                Instances of this class must be designed to be multi-thread safe such that they can be shared between threads.
+            </remarks>
+        </member>
+        <member name="M:NEventStore.IStoreEvents.CreateStream(System.Guid)">
+            <summary>
+                Creates a new stream.
+            </summary>
+            <param name="streamId">The value which uniquely identifies the stream to be created.</param>
+            <returns>An empty stream.</returns>
+        </member>
+        <member name="M:NEventStore.IStoreEvents.OpenStream(System.Guid,System.Int32,System.Int32)">
+            <summary>
+                Reads the stream indicated from the minimum revision specified up to the maximum revision specified or creates
+                an empty stream if no commits are found and a minimum revision of zero is provided.
+            </summary>
+            <param name="streamId">The value which uniquely identifies the stream from which the events will be read.</param>
+            <param name="minRevision">The minimum revision of the stream to be read.</param>
+            <param name="maxRevision">The maximum revision of the stream to be read.</param>
+            <returns>A series of committed events represented as a stream.</returns>
+            <exception cref="T:NEventStore.Persistence.StorageException"/>
+            <exception cref="T:NEventStore.Persistence.StorageUnavailableException"/>
+            <exception cref="T:NEventStore.StreamNotFoundException"/>
+        </member>
+        <member name="M:NEventStore.IStoreEvents.OpenStream(NEventStore.Snapshot,System.Int32)">
+            <summary>
+                Reads the stream indicated from the point of the snapshot forward until the maximum revision specified.
+            </summary>
+            <param name="snapshot">The snapshot of the stream to be read.</param>
+            <param name="maxRevision">The maximum revision of the stream to be read.</param>
+            <returns>A series of committed events represented as a stream.</returns>
+            <exception cref="T:NEventStore.Persistence.StorageException"/>
+            <exception cref="T:NEventStore.Persistence.StorageUnavailableException"/>
+        </member>
+        <member name="P:NEventStore.IStoreEvents.Advanced">
+            <summary>
+                Gets a reference to the underlying persistence engine which allows direct access to persistence operations.
+            </summary>
+        </member>
+        <member name="T:NEventStore.IEventStream">
+            <summary>
+                Indicates the ability to track a series of events and commit them to durable storage.
+            </summary>
+            <remarks>
+                Instances of this class are single threaded and should not be shared between threads.
+            </remarks>
+        </member>
+        <member name="M:NEventStore.IEventStream.Add(NEventStore.EventMessage)">
+            <summary>
+                Adds the event messages provided to the session to be tracked.
+            </summary>
+            <param name="uncommittedEvent">The event to be tracked.</param>
+        </member>
+        <member name="M:NEventStore.IEventStream.CommitChanges(System.Guid)">
+            <summary>
+                Commits the changes to durable storage.
+            </summary>
+            <param name="commitId">The value which uniquely identifies the commit.</param>
+            <exception cref="T:NEventStore.DuplicateCommitException"/>
+            <exception cref="T:NEventStore.ConcurrencyException"/>
+            <exception cref="T:NEventStore.Persistence.StorageException"/>
+            <exception cref="T:NEventStore.Persistence.StorageUnavailableException"/>
+        </member>
+        <member name="M:NEventStore.IEventStream.ClearChanges">
+            <summary>
+                Clears the uncommitted changes.
+            </summary>
+        </member>
+        <member name="P:NEventStore.IEventStream.StreamId">
+            <summary>
+                Gets the value which uniquely identifies the stream to which the stream belongs.
+            </summary>
+        </member>
+        <member name="P:NEventStore.IEventStream.StreamRevision">
+            <summary>
+                Gets the value which indiciates the most recent committed revision of event stream.
+            </summary>
+        </member>
+        <member name="P:NEventStore.IEventStream.CommitSequence">
+            <summary>
+                Gets the value which indicates the most recent committed sequence identifier of the event stream.
+            </summary>
+        </member>
+        <member name="P:NEventStore.IEventStream.CommittedEvents">
+            <summary>
+                Gets the collection of events which have been successfully persisted to durable storage.
+            </summary>
+        </member>
+        <member name="P:NEventStore.IEventStream.CommittedHeaders">
+            <summary>
+                Gets the collection of committed headers associated with the stream.
+            </summary>
+        </member>
+        <member name="P:NEventStore.IEventStream.UncommittedEvents">
+            <summary>
+                Gets the collection of yet-to-be-committed events that have not yet been persisted to durable storage.
+            </summary>
+        </member>
+        <member name="P:NEventStore.IEventStream.UncommittedHeaders">
+            <summary>
+                Gets the collection of yet-to-be-committed headers associated with the uncommitted events.
+            </summary>
+        </member>
+        <member name="T:NEventStore.OptimisticPipelineHook">
+            <summary>
+                Tracks the heads of streams to reduce latency by avoiding roundtrips to storage.
+            </summary>
+        </member>
+        <member name="T:NEventStore.Persistence.IPersistenceFactory">
+            <summary>
+                Indicates the ability to build a ready-to-use persistence engine.
+            </summary>
+            <remarks>
+                Instances of this class must be designed to be multi-thread safe such that they can be shared between threads.
+            </remarks>
+        </member>
+        <member name="M:NEventStore.Persistence.IPersistenceFactory.Build">
+            <summary>
+                Builds a persistence engine.
+            </summary>
+            <returns>A ready-to-use persistence engine.</returns>
+        </member>
+        <member name="T:NEventStore.Persistence.SqlPersistence.Messages">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.AddingParameter">
+            <summary>
+              Looks up a localized string similar to Adding parameter named &apos;{0}&apos; to statement..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.AddingSnapshot">
+            <summary>
+              Looks up a localized string similar to Adding snapshot to stream &apos;{0}&apos; at position {1}..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.AlreadyDisposed">
+            <summary>
+              Looks up a localized string similar to Attempt to use storage after it has been disposed..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.AttemptingToCommit">
+            <summary>
+              Looks up a localized string similar to Attempting to commit {0} events on stream &apos;{1}&apos; at sequence {2}..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.BadConnectionName">
+            <summary>
+              Looks up a localized string similar to A connection could not be created for the specified named connection..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.BadFactoryResult">
+            <summary>
+              Looks up a localized string similar to The factory provided was unable to create an object to store..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.BindingParameter">
+            <summary>
+              Looks up a localized string similar to Binding parameter &apos;{0}&apos; with value: {1}.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.CleaningRootThreadScope">
+            <summary>
+              Looks up a localized string similar to Cleaning up root threaded scope.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.ClientControlledTransaction">
+            <summary>
+              Looks up a localized string similar to Command has client-controlled transaction: {0}..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.CommandExecuted">
+            <summary>
+              Looks up a localized string similar to Command executed, {0} rows affected..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.CommandTextToExecute">
+            <summary>
+              Looks up a localized string similar to Command text to be executed: {0}.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.CommandThrewException">
+            <summary>
+              Looks up a localized string similar to Non-query statement threw an exception of type &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.CommitPersisted">
+            <summary>
+              Looks up a localized string similar to Commit &apos;{0}&apos; persisted successfully..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.ConcurrentWriteDetected">
+            <summary>
+              Looks up a localized string similar to Concurrent write detected..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.ConfiguringConnections">
+            <summary>
+              Looks up a localized string similar to Configuring connections: master &apos;{0}&apos;; replica &apos;{1}&apos;, shards: {2}..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.ConnectionNotFound">
+            <summary>
+              Looks up a localized string similar to Could not find connection name &apos;{0}&apos; in the configuration file..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.CreatingCommand">
+            <summary>
+              Looks up a localized string similar to Creating command..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.DeserializingCommit">
+            <summary>
+              Looks up a localized string similar to Deserializing commit from record using serializer of type &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.DeserializingSnapshot">
+            <summary>
+              Looks up a localized string similar to Deserializing snapshot from data record..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.DiscoveredConnectionProvider">
+            <summary>
+              Looks up a localized string similar to Discovered DB provider factory settings for &apos;{0}&apos;, using &apos;{1}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.DiscoveringConnectionSettings">
+            <summary>
+              Looks up a localized string similar to Discovering connection settings for &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.DisposingRootThreadScopeResources">
+            <summary>
+              Looks up a localized string similar to Disposing underlying thread-scoped resource..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.DisposingStatement">
+            <summary>
+              Looks up a localized string similar to Disposing SQL statement resources, including any transactions and connections..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.DisposingThreadScope">
+            <summary>
+              Looks up a localized string similar to Disposing threaded scope; scope is root: {0}.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.DuplicateCommit">
+            <summary>
+              Looks up a localized string similar to Duplicate commit detected; throwing..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.EmbeddingShardKey">
+            <summary>
+              Looks up a localized string similar to Embedding sharding key into connection string for &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.EnumeratedRowCount">
+            <summary>
+              Looks up a localized string similar to Enumerated {0} rows, re-querying for next page..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.EnumerationThrewException">
+            <summary>
+              Looks up a localized string similar to Enumeration of paged results threw exception of type &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.ExceptionSuppressed">
+            <summary>
+              Looks up a localized string similar to Executed statement threw an exception, but the exception was suppressed..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.ExecutingCommand">
+            <summary>
+              Looks up a localized string similar to Executing command..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.ExecutingQuery">
+            <summary>
+              Looks up a localized string similar to Executing query..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.GettingAllCommitsBetween">
+            <summary>
+              Looks up a localized string similar to Getting all commits for stream &apos;{0}&apos; between revisions &apos;{1}&apos; and &apos;{2}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.GettingAllCommitsFrom">
+            <summary>
+              Looks up a localized string similar to Getting all commits from &apos;{0}&apos; forward..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.GettingAllCommitsFromTo">
+            <summary>
+              Looks up a localized string similar to Getting all commits from &apos;{0}&apos; to &apos;{1}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.GettingRevision">
+            <summary>
+              Looks up a localized string similar to Getting snapshot for stream &apos;{0}&apos; on or before revision {1}..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.GettingStreamsToSnapshot">
+            <summary>
+              Looks up a localized string similar to Getting a list of streams to snapshot..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.GettingUndispatchedCommits">
+            <summary>
+              Looks up a localized string similar to Getting the list of all undispatched commits..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.InitializingStorage">
+            <summary>
+              Looks up a localized string similar to Initializing storage engine..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.MarkingCommitAsDispatched">
+            <summary>
+              Looks up a localized string similar to Marking commit &apos;{0}&apos; as dispatched..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.MaxPageSize">
+            <summary>
+              Looks up a localized string similar to Executing query with max page size of {0}..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.MissingConnectionString">
+            <summary>
+              Looks up a localized string similar to Could not find the required attribute &apos;connection string&apos; on the connection name &apos;{0}&apos; in the configuration file..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.MissingProviderName">
+            <summary>
+              Looks up a localized string similar to Could not find the required attribute &apos;providerName&apos; on the connection name &apos;{0}&apos; in the configuration file..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.NotConnectionsAvailable">
+            <summary>
+              Looks up a localized string similar to No connections have been opened yet..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.ObjectAlreadyDisposed">
+            <summary>
+              Looks up a localized string similar to The object has been disposed and cannot be used..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.OpenFailed">
+            <summary>
+              Looks up a localized string similar to Unable to open connection &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.OpeningConnection">
+            <summary>
+              Looks up a localized string similar to Opening connection &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.OpeningMasterConnection">
+            <summary>
+              Looks up a localized string similar to Opening master connection &apos;{0}&apos;.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.OpeningReplicaConnection">
+            <summary>
+              Looks up a localized string similar to Opening replica connection &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.OpeningThreadScope">
+            <summary>
+              Looks up a localized string similar to Opening new threaded scope for key &apos;{0}&apos;; scope is root: {1}.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.PurgingStorage">
+            <summary>
+              Looks up a localized string similar to Purging all stored data..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.QueryCompleted">
+            <summary>
+              Looks up a localized string similar to Enumeration of result set completed, completing associated transaction scope..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.RecoverableExceptionCompletesScope">
+            <summary>
+              Looks up a localized string similar to Exception is recoverable, completing scope..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.ShuttingDownPersistence">
+            <summary>
+              Looks up a localized string similar to Shutting down persistence..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.StorageThrewException">
+            <summary>
+              Looks up a localized string similar to Storage threw exception of type &apos;{0}&apos;, wrapping and re-throwing..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.Messages.UsingScope">
+            <summary>
+              Looks up a localized string similar to Participating in connection with ambient transaction scope of .
+            </summary>
+        </member>
+        <member name="T:NEventStore.Persistence.SqlPersistence.SqlDialects.CommonSqlStatements">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.CommonSqlStatements.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.CommonSqlStatements.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.CommonSqlStatements.AppendSnapshotToCommit">
+            <summary>
+              Looks up a localized string similar to INSERT
+             INTO Snapshots
+                ( StreamId, StreamRevision, Payload )
+            SELECT @StreamId, @StreamRevision, @Payload
+            /*FROM DUAL*/
+            WHERE EXISTS
+                ( SELECT *
+                    FROM Commits
+                   WHERE StreamId = @StreamId
+                     AND (StreamRevision - Items) &lt;= @StreamRevision )
+              AND NOT EXISTS
+                ( SELECT *
+                    FROM Snapshots
+                   WHERE StreamId = @StreamId
+                     AND StreamRevision = @StreamRevision );.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.CommonSqlStatements.DuplicateCommit">
+            <summary>
+              Looks up a localized string similar to SELECT COUNT(*)
+             FROM Commits
+            WHERE StreamId = @StreamId
+              AND CommitSequence = @CommitSequence
+              AND CommitId = @CommitId;.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.CommonSqlStatements.GetCommitsFromInstant">
+            <summary>
+              Looks up a localized string similar to SELECT StreamId, StreamRevision, CommitId, CommitSequence, CommitStamp, Headers, Payload
+             FROM Commits
+            WHERE CommitStamp &gt;= @CommitStamp
+            ORDER BY CommitSequence, StreamId, StreamRevision
+            LIMIT @Limit OFFSET @Skip;.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.CommonSqlStatements.GetCommitsFromStartingRevision">
+            <summary>
+              Looks up a localized string similar to SELECT StreamId, StreamRevision, CommitId, CommitSequence, CommitStamp, Headers, Payload
+             FROM Commits
+            WHERE StreamId = @StreamId
+              AND StreamRevision &gt;= @StreamRevision
+              AND (StreamRevision - Items) &lt;= @MaxStreamRevision
+              AND CommitSequence &gt; @CommitSequence
+            ORDER BY CommitSequence
+            LIMIT @Limit;.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.CommonSqlStatements.GetCommitsFromToInstant">
+            <summary>
+              Looks up a localized string similar to SELECT StreamId, StreamRevision, CommitId, CommitSequence, CommitStamp, Headers, Payload
+             FROM Commits
+            WHERE CommitStamp &gt;= @CommitStampStart
+              AND CommitStamp &lt; @CommitStampEnd
+            ORDER BY CommitSequence, StreamId, StreamRevision
+            LIMIT @Limit OFFSET @Skip;.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.CommonSqlStatements.GetSnapshot">
+            <summary>
+              Looks up a localized string similar to SELECT *
+             FROM Snapshots
+            WHERE StreamId = @StreamId
+              AND StreamRevision &lt;= @StreamRevision
+            ORDER BY StreamRevision DESC
+            LIMIT 1;.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.CommonSqlStatements.GetStreamsRequiringSnapshots">
+             <summary>
+               Looks up a localized string similar to SELECT C.StreamId, MAX(C.StreamRevision) AS StreamRevision, MAX(COALESCE(S.StreamRevision, 0)) AS SnapshotRevision
+              FROM Commits AS C
+             LEFT OUTER JOIN Snapshots AS S
+                ON C.StreamId = S.StreamId
+               AND C.StreamRevision &gt;= S.StreamRevision
+             WHERE C.StreamId &gt; @StreamId
+             GROUP BY C.StreamId
+            HAVING MAX(C.StreamRevision) &gt;= MAX(COALESCE(S.StreamRevision, 0)) + @Threshold
+             ORDER BY C.StreamId
+             LIMIT @Limit;.
+             </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.CommonSqlStatements.GetUndispatchedCommits">
+            <summary>
+              Looks up a localized string similar to SELECT StreamId, StreamRevision, CommitId, CommitSequence, CommitStamp, Headers, Payload
+             FROM Commits
+            WHERE Dispatched = 0
+            ORDER BY CommitSequence
+            LIMIT @Limit OFFSET @Skip;.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.CommonSqlStatements.MarkCommitAsDispatched">
+            <summary>
+              Looks up a localized string similar to UPDATE Commits
+              SET Dispatched = 1
+            WHERE StreamId = @StreamId
+              AND CommitSequence = @CommitSequence;.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.CommonSqlStatements.PersistCommit">
+             <summary>
+               Looks up a localized string similar to INSERT
+              INTO Commits
+                 ( StreamId, CommitId, CommitSequence, StreamRevision, Items, CommitStamp, Headers, Payload )
+            VALUES (@StreamId, @CommitId, @CommitSequence, @StreamRevision, @Items, @CommitStamp, @Headers, @Payload);.
+             </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.CommonSqlStatements.PurgeStorage">
+             <summary>
+               Looks up a localized string similar to DELETE FROM Snapshots;
+            DELETE FROM Commits;.
+             </summary>
+        </member>
+        <member name="T:NEventStore.Persistence.SqlPersistence.SqlDialects.FirebirdSqlStatements">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.FirebirdSqlStatements.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.FirebirdSqlStatements.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.FirebirdSqlStatements.InitializeStorage">
+             <summary>
+               Looks up a localized string similar to CREATE TABLE Commits
+            (
+                   StreamId char(16) character set octets NOT NULL,
+                   StreamRevision int NOT NULL CHECK (StreamRevision &gt; 0),
+                   Items smallint NOT NULL CHECK (Items &gt; 0),
+                   CommitId char(16) character set octets NOT NULL,
+                   CommitSequence int NOT NULL CHECK (CommitSequence &gt; 0),
+                   CommitStamp timestamp NOT NULL,
+                   Dispatched char(1) DEFAULT 0 NOT NULL,
+                   Headers blob,
+                   Payload blob NOT NULL,
+                   CONSTRAINT PK_Commits PRIMARY KEY (StreamId, Co [rest of string was truncated]&quot;;.
+             </summary>
+        </member>
+        <member name="T:NEventStore.Persistence.SqlPersistence.SqlDialects.MsSqlStatements">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.MsSqlStatements.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.MsSqlStatements.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.MsSqlStatements.InitializeStorage">
+             <summary>
+               Looks up a localized string similar to IF EXISTS(SELECT * FROM sysobjects WHERE name=&apos;Commits&apos; AND xtype = &apos;U&apos;) RETURN;
+            
+            CREATE TABLE [dbo].[Commits]
+            (
+                   [StreamId] [uniqueidentifier] NOT NULL,
+                   [StreamRevision] [int] NOT NULL CHECK ([StreamRevision] &gt; 0),
+                   [Items] [tinyint] NOT NULL CHECK ([Items] &gt; 0),
+                   [CommitId] [uniqueidentifier] NOT NULL CHECK ([CommitId] != 0x0),
+                   [CommitSequence] [int] NOT NULL CHECK ([CommitSequence] &gt; 0),
+                   [CommitStamp] [datetime] NOT NULL,
+                   [Dispatched] [bit] NOT NULL [rest of string was truncated]&quot;;.
+             </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.MsSqlStatements.PagedQueryFormat">
+             <summary>
+               Looks up a localized string similar to WITH [cte] AS
+               ( {0}, ROW_NUMBER() OVER ({1}) AS [row] {2} )
+            
+            SELECT *
+              FROM [cte]
+             WHERE [row] BETWEEN @Skip + 1
+                             AND @Limit + @Skip;.
+             </summary>
+        </member>
+        <member name="T:NEventStore.Persistence.SqlPersistence.SqlDialects.MySqlStatements">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.MySqlStatements.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.MySqlStatements.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.MySqlStatements.InitializeStorage">
+             <summary>
+               Looks up a localized string similar to CREATE TABLE IF NOT EXISTS Commits
+            (
+                   StreamId binary(16) NOT NULL,
+                   StreamRevision int NOT NULL CHECK (StreamRevision &gt; 0),
+                   Items tinyint NOT NULL CHECK (Items &gt; 0),
+                   CommitId binary(16) NOT NULL CHECK (CommitId != 0),
+                   CommitSequence int NOT NULL CHECK (CommitSequence &gt; 0),
+                   CommitStamp bigint NOT NULL,
+                   Dispatched bit NOT NULL DEFAULT 0,
+                   Headers blob NULL,
+                   Payload mediumblob NOT NULL,
+                   CONSTRAINT PK_Commits PRIMARY KEY (StreamId, C [rest of string was truncated]&quot;;.
+             </summary>
+        </member>
+        <member name="T:NEventStore.Persistence.SqlPersistence.SqlDialects.OracleNativeStatements">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.OracleNativeStatements.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.OracleNativeStatements.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.OracleNativeStatements.AddCommitSequence">
+            <summary>
+              Looks up a localized string similar to AND CommitSequence &gt; :CommitSequence.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.OracleNativeStatements.AppendSnapshotToCommit">
+             <summary>
+               Looks up a localized string similar to /*AppendSnapshotToCommit*/
+            INSERT INTO Snapshots   
+              (StreamId, StreamRevision, Payload)  
+            SELECT :StreamId, :StreamRevision, :Payload FROM SYS.DUAL 
+            WHERE	EXISTS
+            	(
+                SELECT * FROM COMMITS 
+                WHERE	StreamId = :StreamId
+                  AND	(StreamRevision - Items) &lt;= :StreamRevision
+            	)
+             AND NOT EXISTS
+            	(
+                SELECT * FROM SNAPSHOTS 
+                WHERE	StreamId = :StreamId
+                  And	Streamrevision = :Streamrevision
+            	).
+             </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.OracleNativeStatements.DuplicateCommit">
+             <summary>
+               Looks up a localized string similar to /*DuplicateCommit*/
+            SELECT CAST( COUNT(*) AS NUMBER(8,0) )
+            FROM Commits 
+            WHERE	(
+                  StreamId = :StreamId
+              AND CommitSequence = :CommitSequence
+              AND CommitId = :CommitId
+            ).
+             </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.OracleNativeStatements.GetCommitsFromInstant">
+             <summary>
+               Looks up a localized string similar to /*GetCommitsFromInstant*/
+            SELECT StreamId, StreamRevision, CommitId, CommitSequence, CommitStamp, Headers, Payload
+            FROM Commits 
+            WHERE	CommitStamp &gt;= :CommitStamp
+            ORDER BY CommitStamp, StreamId, StreamRevision.
+             </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.OracleNativeStatements.GetCommitsFromStartingRevision">
+             <summary>
+               Looks up a localized string similar to /*GetCommitsFromStartingRevision*/
+            SELECT StreamId, StreamRevision, CommitId, CommitSequence, CommitStamp, Headers, Payload
+            FROM Commits
+            WHERE StreamId = :StreamId
+               AND StreamRevision &gt;= :StreamRevision
+               AND (StreamRevision - Items) &lt;= :MaxStreamRevision
+               AND CommitSequence &gt; :CommitSequence
+            ORDER BY CommitSequence.
+             </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.OracleNativeStatements.GetSnapshot">
+             <summary>
+               Looks up a localized string similar to /*GetSnapshot*/
+            SELECT *
+            FROM  Snapshots 
+            WHERE StreamId = :StreamId
+             AND	StreamRevision  &lt;= :StreamRevision
+             AND	ROWNUM &lt;= (:Skip + 1) AND ROWNUM  &gt; :Skip
+            ORDER BY StreamRevision DESC.
+             </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.OracleNativeStatements.GetStreamsRequiringSnapshots">
+             <summary>
+               Looks up a localized string similar to /*GetStreamsRequiringSnapshots*/
+            SELECT StreamId ,  StreamRevision, SnapshotRevision
+            FROM (
+              SELECT C.StreamId, MAX(C.StreamRevision) AS StreamRevision, MAX(COALESCE(S.StreamRevision, 0)) AS SnapshotRevision
+              FROM  Commits C LEFT OUTER JOIN Snapshots S
+                ON C.StreamId = S.StreamId AND C.StreamRevision &gt;= S.StreamRevision
+              WHERE RAWTOHEX(C.StreamId) &gt; RAWTOHEX(:StreamId)
+              GROUP BY C.StreamId
+              HAVING MAX(C.StreamRevision) &gt;= MAX(COALESCE(S.StreamRevision, 0)) + :Threshold
+              ORDER BY C.StreamId [rest of string was truncated]&quot;;.
+             </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.OracleNativeStatements.InitializeStorage">
+            <summary>
+              Looks up a localized string similar to /*InitializeStorage*/    DECLARE     table_count   INTEGER;  BEGIN     SELECT   COUNT (OBJECT_ID)       INTO   table_count       FROM   USER_OBJECTS      WHERE   EXISTS                 (SELECT   OBJECT_NAME                    FROM   USER_OBJECTS                   WHERE   (OBJECT_NAME = &apos;COMMITS&apos; AND OBJECT_TYPE = &apos;TABLE&apos;));       IF table_count = 0     THEN        DBMS_OUTPUT.PUT_LINE (&apos;Creating the Commits table&apos;);          EXECUTE IMMEDIATE (&apos;CREATE TABLE Commits                          (                 [rest of string was truncated]&quot;;.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.OracleNativeStatements.LimitedQueryFormat">
+             <summary>
+               Looks up a localized string similar to /*LimitedQueryFormat*/
+            SELECT OuterQuery.* FROM (
+              SELECT InnerQuery.*, ROWNUM AS ROW_NUMBER_VAL FROM (
+                {0}    
+              ) InnerQuery
+            ) OuterQuery
+            WHERE ROW_NUMBER_VAL &gt; :Skip AND ROW_NUMBER_VAL &lt;= (:Limit + :Skip).
+             </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.OracleNativeStatements.MarkCommitAsDispatched">
+             <summary>
+               Looks up a localized string similar to /*MarkCommitAsDispatched*/
+            UPDATE  Commits   
+            SET Dispatched = 1 
+            WHERE StreamId  = :StreamId
+             AND CommitSequence  = :CommitSequence.
+             </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.OracleNativeStatements.PagedQueryFormat">
+             <summary>
+               Looks up a localized string similar to /*PagedQueryFormat*/
+            SELECT *
+            FROM ( {0},
+                   ROW_NUMBER() OVER({1}) AS ROW_NUMBER_VAL
+                   {2}
+            ) PagedQueryFormat
+            WHERE ROW_NUMBER_VAL &gt; :Skip AND ROW_NUMBER_VAL &lt;= (:Limit + :Skip).
+             </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.OracleNativeStatements.PersistCommit">
+             <summary>
+               Looks up a localized string similar to /*PersistCommit*/
+            INSERT INTO Commits (  
+            	StreamId, 
+            	CommitId, 
+            	CommitSequence, 
+            	StreamRevision, 
+            	Items, 
+            	CommitStamp, 
+            	Headers, 
+            	Payload
+            )  
+            VALUES ( 
+            	:StreamId, 
+            	:CommitId, 
+            	:CommitSequence, 
+            	:StreamRevision, 
+            	:Items, 
+            	:CommitStamp, 
+            	:Headers, 
+            	:Payload
+            ).
+             </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.OracleNativeStatements.PurgeStorage">
+            <summary>
+              Looks up a localized string similar to /*PurgeStorage*/DECLARE  row_count INTEGER;BEGIN  SELECT COUNT(1) INTO row_count  FROM Snapshots;      IF row_count != 0 THEN    EXECUTE IMMEDIATE (&apos;TRUNCATE TABLE Snapshots&apos;);  ELSE    DBMS_OUTPUT.PUT_LINE(&apos;The Snapshots table has already been purged.&apos;);  END IF;    SELECT COUNT(1) INTO row_count  FROM Commits;      IF row_count != 0 THEN    EXECUTE IMMEDIATE (&apos;TRUNCATE TABLE Commits&apos;);  ELSE    DBMS_OUTPUT.PUT_LINE(&apos;The Commits table has already been purged.&apos;);  END IF;  EXCEPTION  WHEN OTHERS THEN    DBM [rest of string was truncated]&quot;;.
+            </summary>
+        </member>
+        <member name="T:NEventStore.Persistence.SqlPersistence.SqlDialects.PostgreSqlStatements">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.PostgreSqlStatements.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.PostgreSqlStatements.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.PostgreSqlStatements.InitializeStorage">
+             <summary>
+               Looks up a localized string similar to CREATE TABLE Commits
+            (
+                   StreamId uuid NOT NULL,
+                   StreamRevision int NOT NULL CHECK (StreamRevision &gt; 0),
+                   Items smallint NOT NULL CHECK (Items &gt; 0),
+                   CommitId uuid NOT NULL,
+                   CommitSequence int NOT NULL CHECK (CommitSequence &gt; 0),
+                   CommitStamp timestamp NOT NULL,
+                   Dispatched boolean NOT NULL DEFAULT false,
+                   Headers bytea NULL,
+                   Payload bytea NOT NULL,
+                   CONSTRAINT PK_Commits PRIMARY KEY (StreamId, CommitSequence)
+            );
+            CREATE UNIQUE INDEX  [rest of string was truncated]&quot;;.
+             </summary>
+        </member>
+        <member name="T:NEventStore.Persistence.SqlPersistence.SqlDialects.SqlCeStatements">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.SqlCeStatements.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.SqlCeStatements.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.SqlCeStatements.InitializeStorage">
+             <summary>
+               Looks up a localized string similar to CREATE TABLE Commits
+            (
+                   StreamId uniqueidentifier NOT NULL,
+                   StreamRevision int NOT NULL,
+                   Items tinyint NOT NULL,
+                   CommitId uniqueidentifier NOT NULL,
+                   CommitSequence int NOT NULL,
+                   CommitStamp datetime NOT NULL,
+                   Dispatched bit NOT NULL DEFAULT 0,
+                   Headers image NULL,
+                   Payload image NOT NULL,
+                   CONSTRAINT PK_Commits PRIMARY KEY (StreamId, CommitSequence)
+            );
+            CREATE UNIQUE INDEX IX_Commits ON Commits (StreamId, CommitId);
+            CREATE UNIQUE [rest of string was truncated]&quot;;.
+             </summary>
+        </member>
+        <member name="T:NEventStore.Persistence.SqlPersistence.SqlDialects.SqliteStatements">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.SqliteStatements.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.SqliteStatements.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.SqlPersistence.SqlDialects.SqliteStatements.InitializeStorage">
+             <summary>
+               Looks up a localized string similar to CREATE TABLE IF NOT EXISTS Commits
+            (
+                   StreamId guid NOT NULL,
+                   StreamRevision int NOT NULL CHECK (StreamRevision &gt; 0),
+                   Items int NOT NULL CHECK (Items &gt; 0),
+                   CommitId guid NOT NULL CHECK (CommitId != 0),
+                   CommitSequence int NOT NULL CHECK (CommitSequence &gt; 0),
+                   CommitStamp datetime NOT NULL,
+                   Dispatched bit NOT NULL DEFAULT 0,
+                   Headers blob NULL,
+                   Payload blob NOT NULL,
+                   CONSTRAINT PK_Commits PRIMARY KEY (StreamId, CommitSequence)
+            );
+             [rest of string was truncated]&quot;;.
+             </summary>
+        </member>
+        <member name="T:NEventStore.Persistence.SqlPersistence.UniqueKeyViolationException">
+            <summary>
+                Indicates that a unique constraint or duplicate key violation occurred.
+            </summary>
+        </member>
+        <member name="M:NEventStore.Persistence.SqlPersistence.UniqueKeyViolationException.#ctor">
+            <summary>
+                Initializes a new instance of the UniqueKeyViolationException class.
+            </summary>
+        </member>
+        <member name="M:NEventStore.Persistence.SqlPersistence.UniqueKeyViolationException.#ctor(System.String)">
+            <summary>
+                Initializes a new instance of the UniqueKeyViolationException class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:NEventStore.Persistence.SqlPersistence.UniqueKeyViolationException.#ctor(System.String,System.Exception)">
+            <summary>
+                Initializes a new instance of the UniqueKeyViolationException class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+            <param name="innerException">The message that is the cause of the current exception.</param>
+        </member>
+        <member name="M:NEventStore.Persistence.SqlPersistence.UniqueKeyViolationException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+                Initializes a new instance of the UniqueKeyViolationException class.
+            </summary>
+            <param name="info">The SerializationInfo that holds the serialized object data of the exception being thrown.</param>
+            <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
+        </member>
+        <member name="T:NEventStore.Persistence.StorageUnavailableException">
+            <summary>
+                Indicates that the underlying persistence medium is unavailable or offline.
+            </summary>
+        </member>
+        <member name="T:NEventStore.Persistence.StorageException">
+            <summary>
+                Represents a general failure of the storage engine or persistence infrastructure.
+            </summary>
+        </member>
+        <member name="M:NEventStore.Persistence.StorageException.#ctor">
+            <summary>
+                Initializes a new instance of the StorageException class.
+            </summary>
+        </member>
+        <member name="M:NEventStore.Persistence.StorageException.#ctor(System.String)">
+            <summary>
+                Initializes a new instance of the StorageException class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:NEventStore.Persistence.StorageException.#ctor(System.String,System.Exception)">
+            <summary>
+                Initializes a new instance of the StorageException class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+            <param name="innerException">The message that is the cause of the current exception.</param>
+        </member>
+        <member name="M:NEventStore.Persistence.StorageException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+                Initializes a new instance of the StorageException class.
+            </summary>
+            <param name="info">The SerializationInfo that holds the serialized object data of the exception being thrown.</param>
+            <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
+        </member>
+        <member name="M:NEventStore.Persistence.StorageUnavailableException.#ctor">
+            <summary>
+                Initializes a new instance of the StorageUnavailableException class.
+            </summary>
+        </member>
+        <member name="M:NEventStore.Persistence.StorageUnavailableException.#ctor(System.String)">
+            <summary>
+                Initializes a new instance of the StorageUnavailableException class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:NEventStore.Persistence.StorageUnavailableException.#ctor(System.String,System.Exception)">
+            <summary>
+                Initializes a new instance of the StorageUnavailableException class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+            <param name="innerException">The message that is the cause of the current exception.</param>
+        </member>
+        <member name="M:NEventStore.Persistence.StorageUnavailableException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+                Initializes a new instance of the StorageUnavailableException class.
+            </summary>
+            <param name="info">The SerializationInfo that holds the serialized object data of the exception being thrown.</param>
+            <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
+        </member>
+        <member name="T:NEventStore.Resources">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.AddingCommitsToStream">
+            <summary>
+              Looks up a localized string similar to Adding commit &apos;{0} with {1} events to stream &apos;{2}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.AddingSnapshot">
+            <summary>
+              Looks up a localized string similar to Adding a snapshot for stream &apos;{0}&apos; at revision &apos;{1}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.AlreadyDisposed">
+            <summary>
+              Looks up a localized string similar to The object has already been disposed..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.AppendingUncommittedToStream">
+            <summary>
+              Looks up a localized string similar to Appending uncommitted event to stream &apos;{0}&apos;.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.AttemptingToCommit">
+            <summary>
+              Looks up a localized string similar to Attempting to append commit &apos;{0}&apos; to stream &apos;{1}&apos; at position &apos;{2}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.AttemptingToCommitChanges">
+            <summary>
+              Looks up a localized string similar to Attempting to commit all changes on stream &apos;{0}&apos; to the underlying store..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.BuildingCommitAttempt">
+            <summary>
+              Looks up a localized string similar to Building a commit attempt &apos;{0}&apos; on stream &apos;{1}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.ClearingUncommittedChanges">
+            <summary>
+              Looks up a localized string similar to Clearing all uncommitted changes on stream &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.CommitAttemptFailedIntegrityChecks">
+            <summary>
+              Looks up a localized string similar to Commit attempt failed one or more integrity checks..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.CommitRejectedByPipelineHook">
+            <summary>
+              Looks up a localized string similar to Pipeline hook of type &apos;{0}&apos; rejected attempt &apos;{1}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.CommitsMustBeUniquelyIdentified">
+            <summary>
+              Looks up a localized string similar to The commit must be uniquely identified..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.CommittingAttempt">
+            <summary>
+              Looks up a localized string similar to Committing attempt &apos;{0}&apos; which contains {1} events to the underlying persistence engine..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.ConvertingEvent">
+            <summary>
+              Looks up a localized string similar to Converting an Event from &apos;{0}&apos; to &apos;{1}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.CreatingStream">
+            <summary>
+              Looks up a localized string similar to Creating stream &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.DispatchingToDevNull">
+            <summary>
+              Looks up a localized string similar to Dispatching message to /dev/null..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.DisposingEngine">
+            <summary>
+              Looks up a localized string similar to Disposing engine..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.GettingAllCommitsFromRevision">
+            <summary>
+              Looks up a localized string similar to Getting all commits for stream &apos;{0}&apos; between &apos;{1}&apos; and &apos;{2}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.GettingAllCommitsFromTime">
+            <summary>
+              Looks up a localized string similar to Getting all commits from &apos;{0}&apos; forward..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.GettingAllCommitsFromToTime">
+            <summary>
+              Looks up a localized string similar to Getting all commits from &apos;{0}&apos; to &apos;{1}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.GettingSnapshotForStream">
+            <summary>
+              Looks up a localized string similar to Getting the most recent snapshot for stream &apos;{0}&apos; on/since revision &apos;{1}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.GettingStreamsToSnapshot">
+            <summary>
+              Looks up a localized string similar to Getting the set of all streams to be snapshot which exceed {0} revisions without a snapshot..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.GettingUndispatchedCommits">
+            <summary>
+              Looks up a localized string similar to Getting undispatched commits from persistence engine..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.IgnoringBeforeRevision">
+            <summary>
+              Looks up a localized string similar to Ignoring some events on commit &apos;{0}&apos; of stream &apos;{1}&apos; because they starting before revision {2}..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.IgnoringBeyondRevision">
+            <summary>
+              Looks up a localized string similar to Ignoring some events on commit &apos;{0}&apos; of stream &apos;{1}&apos; because they go beyond revision {2}..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.InitializingEngine">
+            <summary>
+              Looks up a localized string similar to Initializing engine..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.InitializingPersistence">
+            <summary>
+              Looks up a localized string similar to Initializing persistence engine..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.InvokingPostCommitPipelineHooks">
+            <summary>
+              Looks up a localized string similar to Pushing commit &apos;{0}&apos; to post-commit hook of type &apos;{1}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.InvokingPreCommitHooks">
+            <summary>
+              Looks up a localized string similar to Pushing commit &apos;{0}&apos; to pre-commit hook of type &apos;{1}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.MarkingAsDispatched">
+            <summary>
+              Looks up a localized string similar to Marking commit &apos;{0}&apos; as dispatched..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.MarkingCommitAsDispatched">
+            <summary>
+              Looks up a localized string similar to Marking commit &apos;{0}&apos; as dispatched..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.NoChangesToCommit">
+            <summary>
+              Looks up a localized string similar to There are no outstanding changes to be committed stream &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.NoConflicts">
+            <summary>
+              Looks up a localized string similar to No other commits have been discovered that conflict for stream &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.NoLongerTrackingStream">
+            <summary>
+              Looks up a localized string similar to Purging all commits on stream &apos;{0}&apos; from tracking..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.NonPositiveRevisionNumber">
+            <summary>
+              Looks up a localized string similar to The stream revision must be a positive number..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.NonPositiveSequenceNumber">
+            <summary>
+              Looks up a localized string similar to The commit sequence must be a positive number..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.OpeningStreamAtRevision">
+            <summary>
+              Looks up a localized string similar to Opening stream &apos;{0}&apos; between revisions {1} and {2}..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.OpeningStreamWithSnapshot">
+            <summary>
+              Looks up a localized string similar to Opening stream &apos;{0}&apos; with snapshot at {1} up to revision {2}..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.OptimisticConcurrencyCheck">
+            <summary>
+              Looks up a localized string similar to Verifying that no other commits have succeed on the stream &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.PersistingCommit">
+            <summary>
+              Looks up a localized string similar to Pushing attempt &apos;{0}&apos; on stream &apos;{1}&apos; to the underlying store..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.PipelineHookFilteredCommit">
+            <summary>
+              Looks up a localized string similar to One or more pipeline hooks filtered out the commit..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.PipelineHookSkippedCommit">
+            <summary>
+              Looks up a localized string similar to Pipeline hook of type &apos;{0}&apos; skipped over commit &apos;{1}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.PurgingStore">
+            <summary>
+              Looks up a localized string similar to Purging all data from storage..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.ReadOnlyCollection">
+            <summary>
+              Looks up a localized string similar to The collection is read only and cannot be modified..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.RetrievingUndispatchedCommits">
+            <summary>
+              Looks up a localized string similar to Retrieving all {0} undispatched commits..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.RevisionTooSmall">
+            <summary>
+              Looks up a localized string similar to The stream revision must always be greater than or equal to the commit sequence..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.SchedulingDelivery">
+            <summary>
+              Looks up a localized string similar to Scheduling commit &apos;{0}&apos; for delivery..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.SchedulingDispatch">
+            <summary>
+              Looks up a localized string similar to Scheduling commit &apos;{0}&apos; to be dispatched..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.ShuttingDownDispatcher">
+            <summary>
+              Looks up a localized string similar to Shutting down dispatcher..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.ShuttingDownDispatchScheduler">
+            <summary>
+              Looks up a localized string similar to Shutting down dispatch scheduler..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.ShuttingDownStore">
+            <summary>
+              Looks up a localized string similar to Shutting down event store..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.StartingDispatchScheduler">
+            <summary>
+              Looks up a localized string similar to Starting dispatch scheduler..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.TrackingCommit">
+            <summary>
+              Looks up a localized string similar to Tracking commit {0} on stream &apos;{1}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.TrackingStreams">
+            <summary>
+              Looks up a localized string similar to Tracking up to {0} streams..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.UnableToDispatch">
+            <summary>
+              Looks up a localized string similar to Configured dispatcher of type &apos;{0}&apos; was unable to dispatch commit &apos;{1}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.UnableToMarkDispatched">
+            <summary>
+              Looks up a localized string similar to Unable to mark commit &apos;{0}&apos; as dispatched, the underlying storage has already been disposed.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.UnderlyingStreamHasChanged">
+            <summary>
+              Looks up a localized string similar to The underlying stream &apos;{0}&apos; has changed since the last known commit, refreshing the stream..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Resources.UpdatingStreamHead">
+            <summary>
+              Looks up a localized string similar to Updating stream head for stream &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="T:NEventStore.Serialization.ISerialize">
+            <summary>
+                Provides the ability to serialize and deserialize an object graph.
+            </summary>
+            <remarks>
+                Instances of this class must be designed to be multi-thread safe such that they can be shared between threads.
+            </remarks>
+        </member>
+        <member name="M:NEventStore.Serialization.ISerialize.Serialize``1(System.IO.Stream,``0)">
+            <summary>
+                Serializes the object graph provided and writes a serialized representation to the output stream provided.
+            </summary>
+            <typeparam name="T">The type of object to be serialized</typeparam>
+            <param name="output">The stream into which the serialized object graph should be written.</param>
+            <param name="graph">The object graph to be serialized.</param>
+        </member>
+        <member name="M:NEventStore.Serialization.ISerialize.Deserialize``1(System.IO.Stream)">
+            <summary>
+                Deserializes the stream provided and reconstructs the corresponding object graph.
+            </summary>
+            <typeparam name="T">The type of object to be deserialized.</typeparam>
+            <param name="input">The stream of bytes from which the object will be reconstructed.</param>
+            <returns>The reconstructed object.</returns>
+        </member>
+        <member name="T:NEventStore.Serialization.IDocumentSerializer">
+            <summary>
+                Provides the ability to serialize an object graph to and from a document.
+            </summary>
+            <remarks>
+                Instances of this class must be designed to be multi-thread safe such that they can be shared between threads.
+            </remarks>
+        </member>
+        <member name="M:NEventStore.Serialization.IDocumentSerializer.Serialize``1(``0)">
+            <summary>
+                Serializes the object graph provided into a document.
+            </summary>
+            <typeparam name="T">The type of object to be serialized</typeparam>
+            <param name="graph">The object graph to be serialized.</param>
+            <returns>The document form of the graph provided.</returns>
+        </member>
+        <member name="M:NEventStore.Serialization.IDocumentSerializer.Deserialize``1(System.Object)">
+            <summary>
+                Deserializes the document provided into an object graph.
+            </summary>
+            <typeparam name="T">The type of object graph.</typeparam>
+            <param name="document">The document to be deserialized.</param>
+            <returns>An object graph of the specified type.</returns>
+        </member>
+        <member name="T:NEventStore.Serialization.Messages">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Serialization.Messages.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Serialization.Messages.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Serialization.Messages.DeserializingStream">
+            <summary>
+              Looks up a localized string similar to Deserializing stream to object of type &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Serialization.Messages.InspectingTextStream">
+            <summary>
+              Looks up a localized string similar to Inspecting text-based stream contents..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Serialization.Messages.InvalidKeyLength">
+            <summary>
+              Looks up a localized string similar to The encryption key must be exactly 16 bytes..
+            </summary>
+        </member>
+        <member name="P:NEventStore.Serialization.Messages.SerializingGraph">
+            <summary>
+              Looks up a localized string similar to Serializing object graph of type &apos;{0}&apos;..
+            </summary>
+        </member>
+        <member name="T:NEventStore.StreamNotFoundException">
+            <summary>
+                Represents an attempt to retrieve a nonexistent event stream.
+            </summary>
+        </member>
+        <member name="M:NEventStore.StreamNotFoundException.#ctor">
+            <summary>
+                Initializes a new instance of the StreamNotFoundException class.
+            </summary>
+        </member>
+        <member name="M:NEventStore.StreamNotFoundException.#ctor(System.String)">
+            <summary>
+                Initializes a new instance of the StreamNotFoundException class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:NEventStore.StreamNotFoundException.#ctor(System.String,System.Exception)">
+            <summary>
+                Initializes a new instance of the StreamNotFoundException class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+            <param name="innerException">The message that is the cause of the current exception.</param>
+        </member>
+        <member name="M:NEventStore.StreamNotFoundException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+                Initializes a new instance of the StreamNotFoundException class.
+            </summary>
+            <param name="info">The SerializationInfo that holds the serialized object data of the exception being thrown.</param>
+            <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
+        </member>
+        <member name="T:NEventStore.EventMessage">
+            <summary>
+                Represents a single element in a stream of events.
+            </summary>
+        </member>
+        <member name="M:NEventStore.EventMessage.#ctor">
+            <summary>
+                Initializes a new instance of the EventMessage class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.EventMessage.Headers">
+            <summary>
+                Gets the metadata which provides additional, unstructured information about this message.
+            </summary>
+        </member>
+        <member name="P:NEventStore.EventMessage.Body">
+            <summary>
+                Gets or sets the actual event message body.
+            </summary>
+        </member>
+        <member name="T:NEventStore.Commit">
+            <summary>
+                Represents a series of events which have been fully committed as a single unit and which apply to the stream indicated.
+            </summary>
+        </member>
+        <member name="M:NEventStore.Commit.#ctor(System.Guid,System.Int32,System.Guid,System.Int32,System.DateTime,System.Collections.Generic.Dictionary{System.String,System.Object},System.Collections.Generic.List{NEventStore.EventMessage})">
+            <summary>
+                Initializes a new instance of the Commit class.
+            </summary>
+            <param name="streamId">The value which uniquely identifies the stream to which the commit belongs.</param>
+            <param name="streamRevision">The value which indicates the revision of the most recent event in the stream to which this commit applies.</param>
+            <param name="commitId">The value which uniquely identifies the commit within the stream.</param>
+            <param name="commitSequence">The value which indicates the sequence (or position) in the stream to which this commit applies.</param>
+            <param name="commitStamp">The point in time at which the commit was persisted.</param>
+            <param name="headers">The metadata which provides additional, unstructured information about this commit.</param>
+            <param name="events">The collection of event messages to be committed as a single unit.</param>
+        </member>
+        <member name="M:NEventStore.Commit.#ctor">
+            <summary>
+                Initializes a new instance of the Commit class.
+            </summary>
+        </member>
+        <member name="M:NEventStore.Commit.Equals(System.Object)">
+            <summary>
+                Determines whether the specified object is equal to the current object.
+            </summary>
+            <param name="obj">The object to compare with the current object.</param>
+            <returns>If the two objects are equal, returns true; otherwise false.</returns>
+        </member>
+        <member name="M:NEventStore.Commit.GetHashCode">
+            <summary>
+                Returns the hash code for this instance.
+            </summary>
+            <returns>The hash code for this instance.</returns>
+        </member>
+        <member name="P:NEventStore.Commit.StreamId">
+            <summary>
+                Gets the value which uniquely identifies the stream to which the commit belongs.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Commit.StreamRevision">
+            <summary>
+                Gets the value which indicates the revision of the most recent event in the stream to which this commit applies.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Commit.CommitId">
+            <summary>
+                Gets the value which uniquely identifies the commit within the stream.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Commit.CommitSequence">
+            <summary>
+                Gets the value which indicates the sequence (or position) in the stream to which this commit applies.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Commit.CommitStamp">
+            <summary>
+                Gets the point in time at which the commit was persisted.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Commit.Headers">
+            <summary>
+                Gets the metadata which provides additional, unstructured information about this commit.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Commit.Events">
+            <summary>
+                Gets the collection of event messages to be committed as a single unit.
+            </summary>
+        </member>
+        <member name="T:NEventStore.DuplicateCommitException">
+            <summary>
+                Represents an attempt to commit the same information more than once.
+            </summary>
+        </member>
+        <member name="M:NEventStore.DuplicateCommitException.#ctor">
+            <summary>
+                Initializes a new instance of the DuplicateCommitException class.
+            </summary>
+        </member>
+        <member name="M:NEventStore.DuplicateCommitException.#ctor(System.String)">
+            <summary>
+                Initializes a new instance of the DuplicateCommitException class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:NEventStore.DuplicateCommitException.#ctor(System.String,System.Exception)">
+            <summary>
+                Initializes a new instance of the DuplicateCommitException class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+            <param name="innerException">The message that is the cause of the current exception.</param>
+        </member>
+        <member name="M:NEventStore.DuplicateCommitException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+                Initializes a new instance of the DuplicateCommitException class.
+            </summary>
+            <param name="info">The SerializationInfo that holds the serialized object data of the exception being thrown.</param>
+            <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
+        </member>
+        <member name="T:NEventStore.Serialization.SerializationExtensions">
+            <summary>
+                Implements extension methods that make call to the serialization infrastructure more simple.
+            </summary>
+        </member>
+        <member name="M:NEventStore.Serialization.SerializationExtensions.Serialize``1(NEventStore.Serialization.ISerialize,``0)">
+            <summary>
+                Serializes the object provided.
+            </summary>
+            <typeparam name="T">The type of object to be serialized</typeparam>
+            <param name="serializer">The serializer to use.</param>
+            <param name="value">The object graph to be serialized.</param>
+            <returns>A serialized representation of the object graph provided.</returns>
+        </member>
+        <member name="M:NEventStore.Serialization.SerializationExtensions.Deserialize``1(NEventStore.Serialization.ISerialize,System.Byte[])">
+            <summary>
+                Deserializes the array of bytes provided.
+            </summary>
+            <typeparam name="T">The type of object to be deserialized.</typeparam>
+            <param name="serializer">The serializer to use.</param>
+            <param name="serialized">The serialized array of bytes.</param>
+            <returns>The reconstituted object, if any.</returns>
+        </member>
+        <member name="T:NEventStore.Persistence.StreamHead">
+            <summary>
+                Indicates the most recent information representing the head of a given stream.
+            </summary>
+        </member>
+        <member name="M:NEventStore.Persistence.StreamHead.#ctor(System.Guid,System.Int32,System.Int32)">
+            <summary>
+                Initializes a new instance of the StreamHead class.
+            </summary>
+            <param name="streamId">The value which uniquely identifies the stream where the last snapshot exceeds the allowed threshold.</param>
+            <param name="headRevision">The value which indicates the revision, length, or number of events committed to the stream.</param>
+            <param name="snapshotRevision">The value which indicates the revision at which the last snapshot was taken.</param>
+        </member>
+        <member name="M:NEventStore.Persistence.StreamHead.#ctor">
+            <summary>
+                Initializes a new instance of the StreamHead class.
+            </summary>
+        </member>
+        <member name="M:NEventStore.Persistence.StreamHead.Equals(System.Object)">
+            <summary>
+                Determines whether the specified object is equal to the current object.
+            </summary>
+            <param name="obj">The object to compare with the current object.</param>
+            <returns>If the two objects are equal, returns true; otherwise false.</returns>
+        </member>
+        <member name="M:NEventStore.Persistence.StreamHead.GetHashCode">
+            <summary>
+                Returns the hash code for this instance.
+            </summary>
+            <returns>The hash code for this instance.</returns>
+        </member>
+        <member name="P:NEventStore.Persistence.StreamHead.StreamId">
+            <summary>
+                Gets the value which uniquely identifies the stream where the last snapshot exceeds the allowed threshold.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.StreamHead.HeadRevision">
+            <summary>
+                Gets the value which indicates the revision, length, or number of events committed to the stream.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Persistence.StreamHead.SnapshotRevision">
+            <summary>
+                Gets the value which indicates the revision at which the last snapshot was taken.
+            </summary>
+        </member>
+        <member name="T:NEventStore.Snapshot">
+            <summary>
+                Represents a materialized view of a stream at specific revision.
+            </summary>
+        </member>
+        <member name="M:NEventStore.Snapshot.#ctor(System.Guid,System.Int32,System.Object)">
+            <summary>
+                Initializes a new instance of the Snapshot class.
+            </summary>
+            <param name="streamId">The value which uniquely identifies the stream to which the snapshot applies.</param>
+            <param name="streamRevision">The position at which the snapshot applies.</param>
+            <param name="payload">The snapshot or materialized view of the stream at the revision indicated.</param>
+        </member>
+        <member name="M:NEventStore.Snapshot.#ctor">
+            <summary>
+                Initializes a new instance of the Snapshot class.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Snapshot.StreamId">
+            <summary>
+                Gets the value which uniquely identifies the stream to which the snapshot applies.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Snapshot.StreamRevision">
+            <summary>
+                Gets the position at which the snapshot applies.
+            </summary>
+        </member>
+        <member name="P:NEventStore.Snapshot.Payload">
+            <summary>
+                Gets the snapshot or materialized view of the stream at the revision indicated.
+            </summary>
+        </member>
+        <member name="T:NEventStore.SystemTime">
+            <summary>
+                Provides the ability to override the current moment in time to facilitate testing.
+                Original idea by Ayende Rahien:
+                http://ayende.com/Blog/archive/2008/07/07/Dealing-with-time-in-tests.aspx
+            </summary>
+        </member>
+        <member name="F:NEventStore.SystemTime.Resolver">
+            <summary>
+                The callback to be used to resolve the current moment in time.
+            </summary>
+        </member>
+        <member name="P:NEventStore.SystemTime.UtcNow">
+            <summary>
+                Gets the current moment in time.
+            </summary>
+        </member>
+    </members>
+</doc>

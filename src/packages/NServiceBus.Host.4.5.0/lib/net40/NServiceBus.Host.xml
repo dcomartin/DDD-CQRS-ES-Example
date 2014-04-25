@@ -1,0 +1,252 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>NServiceBus.Host</name>
+    </assembly>
+    <members>
+        <member name="T:NServiceBus.Hosting.Windows.EndpointType">
+            <summary>
+                Representation of an Endpoint Type with additional descriptive properties.
+            </summary>
+        </member>
+        <member name="M:NServiceBus.Hosting.Windows.EndpointType.#ctor(System.Type)">
+            <summary>
+                Initializes a new instance of the <see cref="T:NServiceBus.Hosting.Windows.EndpointType"/> class.
+            </summary>
+            <param name="type">The type.</param>
+        </member>
+        <member name="T:NServiceBus.Hosting.Windows.EndpointTypeDeterminer">
+            <summary>
+                Determines the Endpoint Type by applying conventions.
+            </summary>
+            <remarks>
+                The first eligible Type is returned, checking (in order):
+                Args (for windows hosted endpoints)
+                Configuration
+                Assembly scanning for <see cref="T:NServiceBus.IConfigureThisEndpoint"/>
+            </remarks>
+        </member>
+        <member name="M:NServiceBus.Hosting.Windows.EndpointTypeDeterminer.#ctor(NServiceBus.Hosting.Helpers.AssemblyScannerResults,System.Func{System.String})">
+            <summary>
+                Initializes a new instance of the <see cref="T:NServiceBus.Hosting.Windows.EndpointTypeDeterminer"/> class.
+            </summary>
+            <param name="assemblyScannerResults">The assembly scanner results.</param>
+            <param name="getEndpointConfigurationTypeFromConfig">A func to retrieve the endpoint configuration type from config.</param>
+            <exception cref="T:System.ArgumentNullException">assemblyScannerResults</exception>
+        </member>
+        <member name="M:NServiceBus.Hosting.Windows.EndpointTypeDeterminer.GetEndpointConfigurationType">
+            <summary>
+                Gets the type of the endpoint configuration.
+            </summary>
+            <exception cref="T:System.InvalidOperationException">No endpoint configuration found in scanned assemblies. </exception>
+        </member>
+        <member name="T:NServiceBus.INameThisEndpoint">
+            <summary>
+            Implement this interface in the endpoint configuration class if you want to give this endpoint your own name
+            </summary>
+        </member>
+        <member name="M:NServiceBus.INameThisEndpoint.GetName">
+            <summary>
+            Returns the name to be used for this endpoint
+            </summary>
+        </member>
+        <member name="T:NServiceBus.Hosting.Windows.Installers.WindowsInstaller">
+            <summary>
+            Windows Installer for NService Bus Host
+            </summary>
+        </member>
+        <member name="M:NServiceBus.Hosting.Windows.Installers.WindowsInstaller.Install(System.String[],System.String)">
+            <summary>
+            Run installers (infrastructure and per endpoint) and handles profiles.
+            </summary>
+        </member>
+        <member name="M:NServiceBus.Hosting.Windows.Installers.WindowsInstaller.RunInstall">
+            <summary>
+            Run Install
+            </summary>
+        </member>
+        <member name="T:NServiceBus.Distributor">
+            <summary>
+            Feature Profile for starting the Distributor without a worker running on its endpoint
+            </summary>
+        </member>
+        <member name="T:NServiceBus.MultiSite">
+            <summary>
+            Indicates that this node has a Gateway access to it.
+            </summary>
+        </member>
+        <member name="T:NServiceBus.Master">
+            <summary>
+            Indicates that this node is the master node for its set of messages.
+            </summary>
+        </member>
+        <member name="T:NServiceBus.Time">
+            <summary>
+            Indicates that this node will have a Timeout manager
+            </summary>
+        </member>
+        <member name="T:NServiceBus.Worker">
+            <summary>
+            Indicates that this node is a worker node that will process messages coming from its distributor
+            </summary>
+        </member>
+        <member name="T:NServiceBus.AsA_Publisher">
+            <summary>
+            Indicates this endpoint is a publisher.
+            This is compatible with <see cref="T:NServiceBus.AsA_Server"/> but not <see cref="T:NServiceBus.AsA_Client"/>.
+            </summary>
+        </member>
+        <member name="T:NServiceBus.AsA_Server">
+            <summary>
+            Indicates this endpoint is a server.
+            As such will be set up as a transactional endpoint using impersonation, not purging messages on startup.
+            </summary>
+        </member>
+        <member name="T:NServiceBus.Hosting.Windows.LoggingHandlers.IntegrationLoggingHandler">
+            <summary>
+            Handles logging configuration for the integration profile.
+            </summary>
+        </member>
+        <member name="T:NServiceBus.Hosting.Windows.LoggingHandlers.LiteLoggingHandler">
+            <summary>
+            Handles logging configuration for the lite profile.
+            </summary>
+        </member>
+        <member name="T:NServiceBus.Hosting.Windows.LoggingHandlers.ProductionLoggingHandler">
+            <summary>
+            Handles logging configuration for the production profile
+            </summary>
+        </member>
+        <member name="T:NServiceBus.Hosting.Windows.Profiles.Handlers.PerformanceCountersProfileHandler">
+            <summary>
+            Handles the PerformanceCounters profile.
+            </summary>
+        </member>
+        <member name="T:NServiceBus.Hosting.Windows.Roles.Handlers.ClientRoleHandler">
+            <summary>
+            Handles configuration related to the client role
+            </summary>
+        </member>
+        <member name="M:NServiceBus.Hosting.Windows.Roles.Handlers.ClientRoleHandler.ConfigureRole(NServiceBus.IConfigureThisEndpoint)">
+            <summary>
+            Configures the UnicastBus with typical settings for a client
+            </summary>
+        </member>
+        <member name="T:NServiceBus.Hosting.Windows.Roles.Handlers.PublisherRoleHandler">
+            <summary>
+            Handles configuration related to the publisher role
+            </summary>
+        </member>
+        <member name="M:NServiceBus.Hosting.Windows.Roles.Handlers.PublisherRoleHandler.ConfigureRole(NServiceBus.IConfigureThisEndpoint)">
+            <summary>
+            Configures the UnicastBus with typical settings for a publisher
+            This role is only relevant for the transports that doesn't support native pub/sub like msmq and sqlServer
+            </summary>
+        </member>
+        <member name="T:NServiceBus.Hosting.Windows.Roles.Handlers.ServerRoleHandler">
+            <summary>
+            Handles configuration related to the server role
+            </summary>
+        </member>
+        <member name="M:NServiceBus.Hosting.Windows.Roles.Handlers.ServerRoleHandler.ConfigureRole(NServiceBus.IConfigureThisEndpoint)">
+            <summary>
+            Configures the UnicastBus with typical settings for a server
+            </summary>
+        </member>
+        <member name="T:NServiceBus.Hosting.Roles.Handlers.TransportRoleHandler">
+            <summary>
+            Configuring the right transport based on <see cref="T:NServiceBus.UsingTransport`1"/> role on the endpoint config
+            </summary>
+        </member>
+        <member name="T:NServiceBus.UsingTransport`1">
+            <summary>
+            Role used to specify the desired transport to use
+            </summary>
+            <typeparam name="T">The <see cref="T:NServiceBus.Transports.TransportDefinition"/> to use.</typeparam>
+        </member>
+        <member name="T:NServiceBus.Hosting.Windows.WindowsHost">
+            <summary>
+            A windows implementation of the NServiceBus hosting solution
+            </summary>
+        </member>
+        <member name="M:NServiceBus.Hosting.Windows.WindowsHost.#ctor(System.Type,System.String[],System.String,System.Boolean,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Accepts the type which will specify the users custom configuration.
+            This type should implement <see cref="T:NServiceBus.IConfigureThisEndpoint"/>.
+            </summary>
+            <param name="scannableAssembliesFullName">Name of scan-able assemblies</param>
+        </member>
+        <member name="M:NServiceBus.Hosting.Windows.WindowsHost.OnCriticalError(System.String,System.Exception)">
+            <summary>
+            Windows hosting behavior when critical error occurs is suicide.
+            </summary>
+        </member>
+        <member name="M:NServiceBus.Hosting.Windows.WindowsHost.Start">
+            <summary>
+            Does startup work.
+            </summary>
+        </member>
+        <member name="M:NServiceBus.Hosting.Windows.WindowsHost.Stop">
+            <summary>
+            Does shutdown work.
+            </summary>
+        </member>
+        <member name="M:NServiceBus.Hosting.Windows.WindowsHost.Install(System.String)">
+            <summary>
+            Performs installations
+            </summary>
+            <param name="username">Username passed in to host.</param>
+        </member>
+        <member name="T:NServiceBus.Integration">
+            <summary>
+            Indicates that infrastructure suitable for integration environments be used.
+            </summary>
+        </member>
+        <member name="T:NServiceBus.Lite">
+            <summary>
+            Indicates that the lightest weight infrastructure should be used.
+            </summary>
+        </member>
+        <member name="T:NServiceBus.PerformanceCounters">
+            <summary>
+            Indicates that performance counters should be published.
+            </summary>
+        </member>
+        <member name="T:NServiceBus.Production">
+            <summary>
+            Indicates that the infrastructure should configure itself for production.
+            </summary>
+        </member>
+        <member name="T:NServiceBus.Hosting.Windows.Program">
+            <summary>
+            Entry point to the process.
+            </summary>
+        </member>
+        <member name="T:NServiceBus.Hosting.Windows.HostServiceLocator">
+            <summary>
+            Plugs into the generic service locator to return an instance of <see cref="T:NServiceBus.Hosting.GenericHost"/>.
+            </summary>
+        </member>
+        <member name="F:NServiceBus.Hosting.Windows.HostServiceLocator.Args">
+            <summary>
+            Command line arguments.
+            </summary>
+        </member>
+        <member name="M:NServiceBus.Hosting.Windows.HostServiceLocator.DoGetInstance(System.Type,System.String)">
+            <summary>
+            Returns an instance of <see cref="T:NServiceBus.Hosting.GenericHost"/>
+            </summary>
+        </member>
+        <member name="M:NServiceBus.Hosting.Windows.HostServiceLocator.DoGetAllInstances(System.Type)">
+            <summary>
+            Not implemented.
+            </summary>
+        </member>
+        <member name="T:NServiceBus.AsA_Client">
+            <summary>
+            Indicates this endpoint is a client.
+            As such will be set up as a non-transactional endpoint with no impersonation and purging messages on startup.
+            </summary>
+        </member>
+    </members>
+</doc>

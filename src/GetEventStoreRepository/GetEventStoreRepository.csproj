@@ -38,14 +38,14 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="CommonDomain">
-      <HintPath>lib\CommonDomain.dll</HintPath>
-    </Reference>
-    <Reference Include="CommonDomain.Persistence">
-      <HintPath>lib\CommonDomain.Persistence.dll</HintPath>
+      <HintPath>..\packages\CommonDomain.1.6.0.3\lib\net40\CommonDomain.dll</HintPath>
     </Reference>
     <Reference Include="EventStore.ClientAPI, Version=2.0.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\EventStore.Client.2.0.2\lib\net40\EventStore.ClientAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="NEventStore">
+      <HintPath>..\packages\NEventStore.4.0.0.15\lib\net40\NEventStore.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>

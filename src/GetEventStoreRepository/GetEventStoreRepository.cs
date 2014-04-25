@@ -57,7 +57,7 @@ namespace GetEventStoreRepository
             var aggregate = ConstructAggregate<TAggregate>(id);
             //aggregate.Id = id;
 
-            var sliceStart = 1; //Ignores $StreamCreated
+            var sliceStart = 0;
             StreamEventsSlice currentSlice;
             do
             {
@@ -110,8 +110,8 @@ namespace GetEventStoreRepository
 
             var streamName = _aggregateIdToStreamName(aggregate.GetType(), aggregate.Id);
             var newEvents = aggregate.GetUncommittedEvents().Cast<object>().ToList();
-            var originalVersion = aggregate.Version - newEvents.Count;
-            var expectedVersion = originalVersion == 0 ? ExpectedVersion.NoStream : originalVersion;
+            var originalVersion = aggregate.Version - newEvents.Count - 1;
+            var expectedVersion = originalVersion < 0 ? ExpectedVersion.NoStream : originalVersion;
             var eventsToSave = newEvents.Select(e => ToEventData(Guid.NewGuid(), e, commitHeaders)).ToList();
 
             if (eventsToSave.Count < WritePageSize)
