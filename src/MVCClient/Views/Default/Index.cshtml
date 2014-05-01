@@ -1,5 +1,5 @@
 ﻿@{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "CQRS/DDD/ES Example";
 }
 
 @section scripts
@@ -39,6 +39,8 @@
             $('#btnAdd').click(function () {
                 var id = (S4() + S4() + "-" + S4() + "-4" + S4().substr(0, 3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
                 $.post("/Default/Create", { Id: id, Name: $('#txtName').val(), Email: $('#txtEmail').val() });
+                $('#txtName').val("");
+                $('#txtEmail').val("")
             });
         });
 
@@ -48,25 +50,28 @@
 
 <div class="container">
 
-<h2>Add Customers</h2>
+<h1 class="page-header">DDD/CQRS/ES Example</h1>
 
-<div class="form-group">
-    <label class="control-label col-sm-3">Name:</label>
-    <input type="text" id="txtName" class="form-control input-lg" />
+<div class="panel panel-default">
+  <div class="panel-heading"><h3>Add Customers</h3></div>
+  <div class="panel-body">
+        <div class="form-group">
+            <label class="control-label col-sm-3">Name:</label>
+            <input type="text" id="txtName" class="form-control input-lg" />
+         </div>
+        <div class="form-group">
+            <label class="control-label col-sm-3">Email:</label>
+            <input type="text" id="txtEmail" class="form-control input-lg" />
+        </div>
+        <div class="form-group">
+            <button id="btnAdd" class="btn btn-primary">
+                <i class="glyphicon glyphicon-ok"></i> Submit
+            </button>
+        </div>
+    </div>
 </div>
 
-<div class="form-group">
-    <label class="control-label col-sm-3">Email:</label>
-    <input type="text" id="txtEmail" class="form-control input-lg" />
-</div>
-<div class="form-group">
-    <button id="btnAdd" class="btn btn-primary">
-        <i class="glyphicon glyphicon-ok"></i> Submit
-    </button>
-</div>
-<br /><br />
-
-<h2>Active Customers</h2>
+<h2 class="page-header">Active Customers</h2>
 <table id="customerTable" class="table table-striped table-bordered">
     <thead>
         <tr>
@@ -89,7 +94,7 @@
     </tbody>
 </table>
 
-<h2>Blacklisted Customers</h2>
+<h2 class="page-header">Blacklisted Customers</h2>
 <table id="blacklistedTable" class="table table-striped table-bordered">
     <thead>
         <tr>
